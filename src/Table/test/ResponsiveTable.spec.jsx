@@ -3,20 +3,20 @@ import { mount } from 'enzyme';
 import { range } from 'lodash';
 
 import { withIntl } from '../../test/utils';
-
 import ResponsiveTable from '../ResponsiveTable';
 import Table from '../Table';
 
+// TODO rewrite HEADERS and DATA_ROW - fix whole file
 const HEADERS = [
     {
         type: 'attrLabel',
         title: 'Name'
     }, {
-        type: 'metric',
+        type: 'measure',
         title: '# of Open Opps.',
         format: '#,##0'
     }, {
-        type: 'metric',
+        type: 'measure',
         title: '# of Opportunities',
         format: '[red]#,##0'
     }

@@ -3,57 +3,66 @@ import PropTypes from 'prop-types';
 import { pick } from 'lodash';
 
 import Table from './Table';
-import { getSortInfo, parseMetricValues } from './utils';
 import DrillableItem from '../proptypes/DrillableItem';
+import { getHeaders, getRows } from './utils/dataTransformation';
+import { getSortInfo, getSortItem } from './utils/sort';
 
-export function renderTable(props) {
+function renderDefaultTable(props) {
     return <Table {...props} />;
 }
 
 export default class TableTransformation extends Component {
     static propTypes = {
-        afm: PropTypes.object,
+        afterRender: PropTypes.func,
         config: PropTypes.object,
-        data: PropTypes.shape({
-            headers: PropTypes.arrayOf(PropTypes.object),
-            rawData: PropTypes.arrayOf(PropTypes.array)
-        }).isRequired,
         drillableItems: PropTypes.arrayOf(PropTypes.shape(DrillableItem)),
-        tableRenderer: PropTypes.func.isRequired,
+        executionRequest: PropTypes.object.isRequired, // TODO specify object
+        executionResponse: PropTypes.object.isRequired, // TODO specify object
+        executionResult: PropTypes.object.isRequired, // TODO specify object
         height: PropTypes.number,
-        width: PropTypes.number,
         onSortChange: PropTypes.func,
-        afterRender: PropTypes.func
+        tableRenderer: PropTypes.func,
+        width: PropTypes.number
     };
 
     static defaultProps = {
-        afm: {},
+        afterRender: () => {},
         config: {},
         drillableItems: [],
-        tableRenderer: renderTable,
-        afterRender: () => {},
-        onSortChange: () => {},
         height: undefined,
+        onSortChange: () => {},
+        tableRenderer: renderDefaultTable,
         width: undefined
     };
 
-
     render() {
-        const { data: { headers, rawData }, config, height, width, onSortChange, afm, drillableItems } = this.props;
-        const { sortBy, sortDir } = getSortInfo(config);
+        const {
+            config,
+            drillableItems,
+            executionRequest,
+            executionResponse,
+            executionResult,
+            height,
+            onSortChange,
+            width
+        } = this.props;
 
-        const rows = parseMetricValues(headers, rawData);
+        const headers = getHeaders(executionResponse);
+        const rows = getRows(executionResult);
+
+        const sortItem = getSortItem(executionRequest);
+        const { sortBy, sortDir } = getSortInfo(sortItem, headers);
 
         const tableProps = {
-            afm,
-            rows,
+            ...pick(config, ['rowsPerPage', 'onMore', 'onLess', 'sortInTooltip', 'stickyHeaderOffset']),
+            afterRender: this.props.afterRender,
             drillableItems,
+            executionRequest,
             headers,
-            sortBy,
-            sortDir,
-            ...pick(config, ['rowsPerPage', 'onMore', 'onLess', 'sortInTooltip', 'stickyHeader']),
             onSortChange,
-            afterRender: this.props.afterRender
+            rows,
+            sortBy,
+            sortDir
         };
 
         if (height) {

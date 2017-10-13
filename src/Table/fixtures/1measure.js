@@ -1,0 +1,103 @@
+export const EXECUTION_REQUEST_1M = {
+    afm: {
+        measures: [
+            {
+                localIdentifier: '1st_measure_local_identifier',
+                definition: {
+                    measure: {
+                        item: {
+                            uri: '/gdc/md/project_id/obj/1st_measure_uri_id'
+                        }
+                    }
+                }
+            }
+        ]
+    },
+    resultSpec: {
+        dimensions: [
+            {
+                name: 'a',
+                itemIdentifiers: []
+            },
+            {
+                name: 'm',
+                itemIdentifiers: ['measureGroup']
+            }
+        ]
+    }
+};
+
+export const EXECUTION_RESPONSE_1M = {
+    dimensions: [
+        {
+            name: 'a',
+            headers: []
+        },
+        {
+            name: 'm',
+            headers: [
+                {
+                    measureGroupHeader: {
+                        items: [
+                            {
+                                measureHeaderItem: {
+                                    uri: '/gdc/md/project_id/obj/1st_measure_uri_id',
+                                    identifier: '1st_measure_identifier',
+                                    localIdentifier: '1st_measure_local_identifier',
+                                    name: 'Lost',
+                                    format: '$#,##0.00'
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ],
+    links: {
+        dataResult: '/gdc/app/projects/project_id/executionResults/foo?q=bar&c=baz&dimension=a&dimension=m'
+    }
+};
+
+export const EXECUTION_RESULT_1M = {
+    data: [
+        [
+            '42470571.16'
+        ]
+    ],
+    attributeHeaderItems: [
+        [], // empty array => there are no attributes in first dimension
+        [] // empty array => there are no attributes in second dimension
+    ],
+    paging: {
+        size: [
+            1,
+            1
+        ],
+        offset: [
+            0,
+            0
+        ],
+        overallSize: [
+            1,
+            1
+        ]
+    }
+};
+
+export const TABLE_HEADERS_1M = [
+    {
+        type: 'measure',
+        uri: '/gdc/md/project_id/obj/1st_measure_uri_id',
+        identifier: '1st_measure_identifier',
+        localIdentifier: '1st_measure_local_identifier',
+        name: 'Lost',
+        format: '$#,##0.00'
+    }
+];
+
+export const TABLE_ROWS_1M = [
+    [
+        '42470571.16'
+    ]
+];
