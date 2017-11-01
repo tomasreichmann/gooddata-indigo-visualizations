@@ -54,7 +54,7 @@ import {
     EXECUTION_RESULT_POP,
     TABLE_HEADERS_POP,
     TABLE_ROWS_POP
-} from '../../fixtures/pop';
+} from '../../fixtures/periodOverPeriod';
 
 describe('Table utils - Data transformation', () => {
     describe('One attribute', () => {
