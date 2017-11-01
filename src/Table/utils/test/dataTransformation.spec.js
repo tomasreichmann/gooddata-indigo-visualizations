@@ -29,6 +29,20 @@ import {
 } from '../../fixtures/2measures';
 
 import {
+    EXECUTION_RESPONSE_1A_2M,
+    EXECUTION_RESULT_1A_2M,
+    TABLE_HEADERS_1A_2M,
+    TABLE_ROWS_1A_2M
+} from '../../fixtures/1attribute2measures';
+
+import {
+    EXECUTION_RESPONSE_2A_1M,
+    EXECUTION_RESULT_2A_1M,
+    TABLE_HEADERS_2A_1M,
+    TABLE_ROWS_2A_1M
+} from '../../fixtures/2attributes1measure';
+
+import {
     EXECUTION_RESPONSE_2A_3M,
     EXECUTION_RESULT_2A_3M,
     TABLE_HEADERS_2A_3M,
@@ -40,7 +54,7 @@ import {
     EXECUTION_RESULT_POP,
     TABLE_HEADERS_POP,
     TABLE_ROWS_POP
-} from '../../fixtures/pop';
+} from '../../fixtures/periodOverPeriod';
 
 describe('Table utils - Data transformation', () => {
     describe('One attribute', () => {
@@ -88,6 +102,30 @@ describe('Table utils - Data transformation', () => {
         it('should get rows', () => {
             const rows = getRows(EXECUTION_RESULT_2M);
             expect(rows).toEqual(TABLE_ROWS_2M);
+        });
+    });
+
+    describe('One attributes and two measures', () => {
+        it('should get headers', () => {
+            const headers = getHeaders(EXECUTION_RESPONSE_1A_2M);
+            expect(headers).toEqual(TABLE_HEADERS_1A_2M);
+        });
+
+        it('should get rows', () => {
+            const rows = getRows(EXECUTION_RESULT_1A_2M);
+            expect(rows).toEqual(TABLE_ROWS_1A_2M);
+        });
+    });
+
+    describe('Two attributes and one measure', () => {
+        it('should get headers', () => {
+            const headers = getHeaders(EXECUTION_RESPONSE_2A_1M);
+            expect(headers).toEqual(TABLE_HEADERS_2A_1M);
+        });
+
+        it('should get rows', () => {
+            const rows = getRows(EXECUTION_RESULT_2A_1M);
+            expect(rows).toEqual(TABLE_ROWS_2A_1M);
         });
     });
 
