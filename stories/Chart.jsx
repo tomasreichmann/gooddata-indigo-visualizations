@@ -1,6 +1,7 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 
+import Visualization from '../src/Visualization';
 import LineFamilyChartTransformation from '../src/Chart/LineFamilyChartTransformation';
 import ChartTransformation from '../src/Chart/ChartTransformation';
 import { FLUID_LEGEND_THRESHOLD } from '../src/Chart/Legend/Legend';
@@ -90,8 +91,7 @@ storiesOf('Chart')
                                     responsive: true
                                 }
                             }}
-                            height={300}
-                            data={barChartWithPagedLegend.data}
+                                    data={barChartWithPagedLegend.data}
                         />
                     </div>
                 )}
@@ -398,6 +398,90 @@ storiesOf('Chart')
                     }}
                     {...executionData}
                     onDataTooLarge={f => f}
+                />
+            )
+        );
+    })
+    .add('visualization barChartWithoutAttributes', () => {
+        const executionData = dataSets.barChartWithoutAttributes;
+
+        return screenshotWrap(
+            wrap(
+                <Visualization
+                    {...executionData}
+                    config={{
+                        type: 'column'
+                    }}
+                />
+            )
+        );
+    })
+    .add('visualization barChartWith3MetricsAndViewByAttribute', () => {
+        const executionData = dataSets.barChartWith3MetricsAndViewByAttribute;
+
+        return screenshotWrap(
+            wrap(
+                <Visualization
+                    {...executionData}
+                    config={{
+                        type: 'column'
+                    }}
+                />
+            )
+        );
+    })
+    .add('visualization barChartWithViewByAttribute', () => {
+        const executionData = dataSets.barChartWithViewByAttribute;
+
+        return screenshotWrap(
+            wrap(
+                <Visualization
+                    {...executionData}
+                    config={{
+                        type: 'column'
+                    }}
+                />
+            )
+        );
+    })
+    .add('visualization barChartWithStackByAndViewByAttributes', () => {
+        const executionData = dataSets.barChartWithStackByAndViewByAttributes;
+
+        return screenshotWrap(
+            wrap(
+                <Visualization
+                    {...executionData}
+                    config={{
+                        type: 'column'
+                    }}
+                />
+            )
+        );
+    })
+    .add('visualization barChartWithPopMeasureAndViewByAttribute', () => {
+        const executionData = dataSets.barChartWithPopMeasureAndViewByAttribute;
+
+        return screenshotWrap(
+            wrap(
+                <Visualization
+                    {...executionData}
+                    config={{
+                        type: 'column'
+                    }}
+                />
+            )
+        );
+    })
+    .add('visualization pieChartWithMetricsOnly', () => {
+        const executionData = dataSets.pieChartWithMetricsOnly;
+
+        return screenshotWrap(
+            wrap(
+                <Visualization
+                    {...executionData}
+                    config={{
+                        type: 'pie'
+                    }}
                 />
             )
         );
