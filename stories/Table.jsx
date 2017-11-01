@@ -14,8 +14,8 @@ import {
     EXECUTION_RESULT_2A_1M
 } from '../src/Table/fixtures/2attributes1measure';
 
-function generateExecutionRequest() { // TODO generate correct execution request
-    // no needed exact executionRequest for these storybook usages
+function generateExecutionRequest() {
+    // no needed exact executionRequest for these storybook usages where is no sorting
     return {
         afm: {},
         resultSpec: {}
