@@ -3,85 +3,9 @@ import { mount } from 'enzyme';
 import { Table } from 'fixed-data-table-2';
 
 import TableVisualization from '../TableVisualization';
-import { ASC, DESC } from '../constants/sort';
 import { withIntl } from '../../test/utils';
-
-const TABLE_HEADERS = [
-    {
-        type: 'attribute',
-        uri: '/gdc/md/project_id/obj/attribute_1_df_uri_id',
-        identifier: 'attribute_1',
-        localIdentifier: 'attribute_1_local_identifier',
-        name: 'Name'
-    }, {
-        type: 'measure',
-        uri: '/gdc/md/project_id/obj/measure_1_uri_id',
-        identifier: 'measure_1_identifier',
-        localIdentifier: 'measure_1_local_identifier',
-        name: '# of Open Opps.',
-        format: '#,##0'
-    }, {
-        type: 'measure',
-        uri: '/gdc/md/project_id/obj/measure_2_uri_id',
-        identifier: 'measure_2_identifier',
-        localIdentifier: 'measure_2_local_identifier',
-        name: '# of Opportunities',
-        format: '[red]#,##0'
-    }
-];
-
-const TABLE_ROWS = [
-    [{ id: '1', name: 'Wile E. Coyote' }, '30', '1324']
-];
-
-const EXECUTION_REQUEST = {
-    afm: {
-        attributes: [
-            {
-                localIdentifier: 'attribute_1_local_identifier',
-                displayForm: {
-                    uri: '/gdc/md/project_id/obj/attribute_1_df_uri_id'
-                }
-            }
-        ],
-        measures: [
-            {
-                localIdentifier: 'measure_1_local_identifier',
-                definition: {
-                    measure: {
-                        item: {
-                            uri: '/gdc/md/project_id/obj/measure_1_uri_id'
-                        }
-                    }
-                },
-                format: '#,##0'
-            },
-            {
-                localIdentifier: 'measure_2_local_identifier',
-                definition: {
-                    measure: {
-                        item: {
-                            uri: '/gdc/md/project_id/obj/measure_2_uri_id'
-                        }
-                    }
-                },
-                format: '[red]#,##0'
-            }
-        ]
-    },
-    resultSpec: {
-        dimensions: [
-            {
-                identifier: 'a',
-                itemIdentifiers: ['attribute-1-local-identifier']
-            },
-            {
-                identifier: 'm',
-                itemIdentifiers: ['measureGroup']
-            }
-        ]
-    }
-};
+import { ASC, DESC } from '../constants/sort';
+import { EXECUTION_REQUEST_1A_2M, TABLE_HEADERS_1A_2M, TABLE_ROWS_1A_2M } from '../fixtures/1attribute2measures';
 
 const WrappedTable = withIntl(TableVisualization);
 
@@ -90,9 +14,9 @@ describe('Table', () => {
         const props = {
             containerWidth: 600,
             containerHeight: 400,
-            rows: TABLE_ROWS,
-            headers: TABLE_HEADERS,
-            executionRequest: EXECUTION_REQUEST,
+            rows: TABLE_ROWS_1A_2M,
+            headers: TABLE_HEADERS_1A_2M,
+            executionRequest: EXECUTION_REQUEST_1A_2M,
             ...customProps
         };
 
@@ -155,7 +79,7 @@ describe('Table', () => {
         });
 
         it('should bind onclick when cell drillable', () => {
-            const wrapper = renderTable({ drillableItems: [{ uri: '/gdc/md/project_id/obj/measure_1_uri_id' }] });
+            const wrapper = renderTable({ drillableItems: [{ uri: '/gdc/md/project_id/obj/1st_measure_uri_id' }] });
             const columns = wrapper.find(Table).prop('children');
             const cell = columns[1].props.cell({ rowIndex: 0, columnKey: 1 });
 
