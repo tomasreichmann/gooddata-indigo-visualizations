@@ -6,8 +6,13 @@ import TableTransformation from '../src/Table/TableTransformation';
 import ResponsiveTable from '../src/Table/ResponsiveTable';
 import IntlWrapper from './utils/IntlWrapper';
 import { screenshotWrap } from './utils/wrap';
-import { EXECUTION_REQUEST, EXECUTION_RESPONSE, EXECUTION_RESULT } from './test_data/table';
 import '../src/styles/table.scss';
+
+import {
+    EXECUTION_REQUEST_2A_1M,
+    EXECUTION_RESPONSE_2A_1M,
+    EXECUTION_RESULT_2A_1M
+} from '../src/Table/fixtures/2attributes1measure';
 
 function generateExecutionRequest() { // TODO generate correct execution request
     // no needed exact executionRequest for these storybook usages
@@ -94,9 +99,9 @@ storiesOf('Table')
         screenshotWrap(
             <div>
                 <TableTransformation
-                    executionRequest={EXECUTION_REQUEST}
-                    executionResponse={EXECUTION_RESPONSE}
-                    executionResult={EXECUTION_RESULT}
+                    executionRequest={EXECUTION_REQUEST_2A_1M}
+                    executionResponse={EXECUTION_RESPONSE_2A_1M}
+                    executionResult={EXECUTION_RESULT_2A_1M}
                     height={400}
                     onSortChange={action('Sort changed')}
                     width={600}
@@ -108,9 +113,9 @@ storiesOf('Table')
         screenshotWrap(
             <div style={{ width: '100%', height: 500 }}>
                 <TableTransformation
-                    executionRequest={EXECUTION_REQUEST}
-                    executionResponse={EXECUTION_RESPONSE}
-                    executionResult={EXECUTION_RESULT}
+                    executionRequest={EXECUTION_REQUEST_2A_1M}
+                    executionResponse={EXECUTION_RESPONSE_2A_1M}
+                    executionResult={EXECUTION_RESULT_2A_1M}
                     onSortChange={action('Sort changed')}
                 />
             </div>
@@ -123,9 +128,9 @@ storiesOf('Table')
                     config={{
                         stickyHeader: 0
                     }}
-                    executionRequest={EXECUTION_REQUEST}
-                    executionResponse={EXECUTION_RESPONSE}
-                    executionResult={EXECUTION_RESULT}
+                    executionRequest={EXECUTION_REQUEST_2A_1M}
+                    executionResponse={EXECUTION_RESPONSE_2A_1M}
+                    executionResult={EXECUTION_RESULT_2A_1M}
                     height={400}
                     onSortChange={action('Sort changed')}
                 />
