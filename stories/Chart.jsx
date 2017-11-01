@@ -2,9 +2,13 @@ import React from 'react';
 import { storiesOf } from '@storybook/react';
 
 import LineFamilyChartTransformation from '../src/Chart/LineFamilyChartTransformation';
+import ChartTransformation from '../src/Chart/ChartTransformation';
 import { FLUID_LEGEND_THRESHOLD } from '../src/Chart/Legend/Legend';
+
 import * as TestConfig from './test_data/test_config';
 import * as TestData from './test_data/test_data';
+import * as dataSets from './test_data/dataSets';
+
 import IntlWrapper from './utils/IntlWrapper';
 import { wrap, screenshotWrap } from './utils/wrap';
 import { createMock } from './utils/mockGenerator';
@@ -152,4 +156,249 @@ storiesOf('Chart')
                 </div>
             </IntlWrapper>
         )
-    ));
+    ))
+    .add('old transformation simple bar chart', () => {
+        return screenshotWrap(
+            wrap(
+                <LineFamilyChartTransformation
+                    // orginal props
+                    config={{
+                        ...TestConfig.barChartSimple,
+                        legend: {
+                            enabled: false
+                        },
+                        type: 'column'
+                    }}
+                    data={TestData.barChartSimple}
+                />
+            )
+        );
+    })
+    .add('new transformation column chart without attributes', () => {
+        const executionData = dataSets.barChartWithoutAttributes;
+
+        return screenshotWrap(
+            wrap(
+                <ChartTransformation
+                    // orginal props
+                    // new props
+                    config={{
+                        type: 'column',
+                        legend: {
+                            enabled: true,
+                            position: 'top'
+                        },
+                        legendLayout: 'horizontal',
+                        colorPalette: TestData.lgbtPalette
+                    }}
+                    {...executionData}
+                    onDataTooLarge={f => f}
+                />
+            )
+        );
+    })
+    .add('new transformation column chart with 3 metrics and view by attribute', () => {
+        const executionData = dataSets.barChartWith3MetricsAndViewByAttribute;
+
+        return screenshotWrap(
+            wrap(
+                <ChartTransformation
+                    // orginal props
+                    // new props
+                    config={{
+                        type: 'column',
+                        legend: {
+                            enabled: true,
+                            position: 'top'
+                        },
+                        legendLayout: 'horizontal',
+                        colorPalette: TestData.lgbtPalette
+                    }}
+                    {...executionData}
+                    onDataTooLarge={f => f}
+                />
+            )
+        );
+    })
+    .add('new transformation column chart with view by attribute', () => {
+        const executionData = dataSets.barChartWithViewByAttribute;
+
+        return screenshotWrap(
+            wrap(
+                <ChartTransformation
+                    drillableItems={[
+                        // {
+                        //     uri: response.transformationResponse.dimensions[0].headers[0].uri
+                        // }
+                    ]}
+                    config={{
+                        type: 'column',
+                        legend: {
+                            enabled: true,
+                            position: 'right'
+                        },
+                        legendLayout: 'horizontal',
+                        colorPalette: TestData.lgbtPalette
+                    }}
+                    {...executionData}
+                    onDataTooLarge={f => f}
+                />
+            )
+        );
+    })
+    .add('new transformation column chart with viewBy and stackBy attribute', () => {
+        const executionData = dataSets.barChartWithStackByAndViewByAttributes;
+
+        return screenshotWrap(
+            wrap(
+                <ChartTransformation
+                    drillableItems={[
+                        // {
+                        //     uri: response.transformationResponse.dimensions[1].headers[0].labels[0].id
+                        // }
+                    ]}
+                    config={{
+                        type: 'column',
+                        legend: {
+                            enabled: true,
+                            position: 'top'
+                        },
+                        legendLayout: 'vertical',
+                        colorPalette: TestData.lgbtPalette
+                    }}
+                    {...executionData}
+                    onDataTooLarge={f => f}
+                />
+            )
+        );
+    })
+    .add('new transformation column chart with pop measure and view by attribute', () => {
+        const executionData = dataSets.barChartWithPopMeasureAndViewByAttribute;
+
+        return screenshotWrap(
+            wrap(
+                <ChartTransformation
+                    drillableItems={[
+                        // {
+                        //     uri: response.transformationResponse.dimensions[1].headers[0].labels[0].id
+                        // }
+                    ]}
+                    config={{
+                        type: 'column',
+                        legend: {
+                            enabled: true,
+                            position: 'top'
+                        },
+                        legendLayout: 'vertical',
+                        colorPalette: TestData.lgbtPalette
+                    }}
+                    {...executionData}
+                    onDataTooLarge={f => f}
+                />
+            )
+        );
+    })
+    .add('new transformation bar chart with viewBy and stackBy attribute', () => {
+        const executionData = dataSets.barChartWithStackByAndViewByAttributes;
+
+        return screenshotWrap(
+            wrap(
+                <ChartTransformation
+                    drillableItems={[
+                        // {
+                        //     uri: response.transformationResponse.dimensions[1].headers[0].labels[0].id
+                        // }
+                    ]}
+                    config={{
+                        type: 'bar',
+                        legend: {
+                            enabled: true,
+                            position: 'bottom'
+                        },
+                        legendLayout: 'vertical',
+                        colorPalette: TestData.lgbtPalette
+                    }}
+                    {...executionData}
+                    onDataTooLarge={f => f}
+                />
+            )
+        );
+    })
+    .add('new transformation line chart with viewBy and stackBy attribute', () => {
+        const executionData = dataSets.barChartWithStackByAndViewByAttributes;
+
+        return screenshotWrap(
+            wrap(
+                <ChartTransformation
+                    drillableItems={[
+                        // {
+                        //     uri: response.transformationResponse.dimensions[1].headers[0].labels[0].id
+                        // }
+                    ]}
+                    config={{
+                        type: 'line',
+                        legend: {
+                            enabled: true,
+                            position: 'right'
+                        },
+                        legendLayout: 'horizontal',
+                        colorPalette: TestData.lgbtPalette
+                    }}
+                    {...executionData}
+                    onDataTooLarge={f => f}
+                />
+            )
+        );
+    })
+    .add('new transformation pie chart view viewBy attribute', () => {
+        const executionData = dataSets.barChartWithViewByAttribute;
+
+        return screenshotWrap(
+            wrap(
+                <ChartTransformation
+                    drillableItems={[
+                        // {
+                        //     uri: response.transformationResponse.dimensions[1].headers[0].labels[0].id
+                        // }
+                    ]}
+                    config={{
+                        type: 'pie',
+                        legend: {
+                            enabled: true,
+                            position: 'left'
+                        },
+                        legendLayout: 'horizontal',
+                        colorPalette: TestData.lgbtPalette
+                    }}
+                    {...executionData}
+                    onDataTooLarge={f => f}
+                />
+            )
+        );
+    })
+    .add('new transformation pie chart view metrics only', () => {
+        const executionData = dataSets.pieChartWithMetricsOnly;
+
+        return screenshotWrap(
+            wrap(
+                <ChartTransformation
+                    drillableItems={[
+                        // {
+                        //     uri: data.executionResponse.dimensions[0].headers[0].!!!items[0].id
+                        // }
+                    ]}
+                    config={{
+                        type: 'pie',
+                        legend: {
+                            enabled: true,
+                            position: 'left'
+                        },
+                        legendLayout: 'horizontal',
+                        colorPalette: TestData.lgbtPalette
+                    }}
+                    {...executionData}
+                    onDataTooLarge={f => f}
+                />
+            )
+        );
+    });
