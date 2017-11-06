@@ -44,7 +44,7 @@ export const EXECUTION_RESPONSE_1A = {
         }
     ],
     links: {
-        dataResult: '/gdc/app/projects/project_id/executionResults/foo?q=bar&c=baz&dimension=a&dimension=m'
+        executionResult: '/gdc/app/projects/project_id/executionResults/foo?q=bar&c=baz&dimension=a&dimension=m'
     }
 };
 
