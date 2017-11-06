@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classNames from 'classnames';
 import { Cell, Column, Table } from 'fixed-data-table-2';
-import { assign, debounce, noop, partial, pick, uniqueId } from 'lodash';
+import { assign, debounce, noop, pick, uniqueId } from 'lodash';
 
 import Bubble from '@gooddata/goodstrap/lib/Bubble/Bubble';
 import BubbleHoverTrigger from '@gooddata/goodstrap/lib/Bubble/BubbleHoverTrigger';
@@ -157,9 +157,28 @@ export default class TableVisualization extends Component {
         style.top = `${Math.round(y)}px`;
     }
 
-    getSortFunc(column, index) {
+    getSortFunc(header, sort) {
         const { onSortChange } = this.props;
-        return partial(onSortChange, column, index);
+
+        const sortItem = header.type === 'attribute' ? {
+            attributeSortItem: {
+                direction: sort.nextDir,
+                attributeIdentifier: header.localIdentifier
+            }
+        } : {
+            measureSortItem: {
+                direction: sort.nextDir,
+                locators: [
+                    {
+                        measureLocatorItem: {
+                            measureIdentifier: header.localIdentifier
+                        }
+                    }
+                ]
+            }
+        };
+
+        return onSortChange(sortItem);
     }
 
     getSortObj(header, index) {
@@ -316,7 +335,7 @@ export default class TableVisualization extends Component {
                         activeSortDir={sort.dir}
                         title={header.name}
                         onClose={this.closeBubble}
-                        onSortChange={this.getSortFunc(header, index)}
+                        onSortChange={this.getSortFunc(header, sort)}
                     />
                 </Bubble>
                 }
@@ -326,13 +345,10 @@ export default class TableVisualization extends Component {
 
     renderDefaultHeader(header, index) {
         const headerClasses = getHeaderClassNames(header);
-
-        const sort = this.getSortObj(header, index);
-        const sortFunc = this.getSortFunc(header, index);
-
-        const onClick = e => sortFunc(sort.nextDir, e);
         const onMouseEnter = this.getMouseOverFunc(index);
         const onMouseLeave = this.getMouseOverFunc(null);
+        const sort = this.getSortObj(header, index);
+        const onClick = () => this.getSortFunc(header, sort);
 
         const columnAlign = getColumnAlign(header);
         const tooltipAlignPoints = getTooltipAlignPoints(columnAlign);

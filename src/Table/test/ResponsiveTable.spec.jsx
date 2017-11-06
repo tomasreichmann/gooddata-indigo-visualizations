@@ -38,6 +38,22 @@ describe('Responsive Table', () => {
         expect(wrapper.find(Table).prop('containerWidth')).toEqual(600);
     });
 
+    describe('page', () => {
+        it('should set new page when it is sent in props', () => {
+            const wrapper = renderTable({ tableHeaders: [], tableRows: [] });
+            expect(wrapper.find(Table).prop('page')).toEqual(1);
+            wrapper.setProps({ page: 2 });
+            expect(wrapper.find(Table).prop('page')).toEqual(2);
+        });
+
+        it('should not set new page when it isn\'t sent in props', () => {
+            const wrapper = renderTable({ tableHeaders: [], tableRows: [] });
+            expect(wrapper.find(Table).prop('page')).toEqual(1);
+            wrapper.setProps({ foo: 'baz' });
+            expect(wrapper.find(Table).prop('page')).toEqual(1);
+        });
+    });
+
     describe('when data contains less than 1 page of rows', () => {
         const tableData = {
             tableHeaders: TABLE_HEADERS_1A_2M,
