@@ -443,7 +443,6 @@ export default class TableVisualization extends Component {
         } = this.props;
 
         const height = containerMaxHeight ? undefined : containerHeight;
-        // TODO what if headers is empty array?
         const columnWidth = Math.max(containerWidth / headers.length, MIN_COLUMN_WIDTH);
         const isSticky = TableVisualization.isSticky(stickyHeaderOffset);
         const componentClasses = classNames('indigo-table-component', { 'has-hidden-rows': hasHiddenRows });
