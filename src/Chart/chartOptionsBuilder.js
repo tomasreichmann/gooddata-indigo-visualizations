@@ -1,6 +1,7 @@
 import { colors2Object, numberFormat } from '@gooddata/numberjs';
+import invariant from 'invariant';
 
-import { uniq, get, intersection, isNumber, cloneDeep } from 'lodash';
+import { get, isNumber, without } from 'lodash';
 import { parseValue } from '../utils/common';
 import { DEFAULT_COLOR_PALETTE, _getLighterColor } from './transformation';
 import { PIE_CHART } from '../VisualizationTypes';
@@ -9,6 +10,9 @@ import { isDataOfReasonableSize } from './highChartsCreators';
 import { DEFAULT_CATEGORIES_LIMIT } from './highcharts/commonConfiguration';
 
 export const PIE_CHART_LIMIT = 20;
+
+export const VIEW_BY_DIMENSION_INDEX = 0;
+export const STACK_BY_DIMENSION_INDEX = 1;
 
 export function isNegativeValueIncluded(series) {
     return series
@@ -40,12 +44,19 @@ export function isPopMeasure(measureItem, afm) {
     });
 }
 
+export function normalizeColorToRGB(color) {
+    const hexPattern = /#([0-9A-F]{2})([0-9A-F]{2})([0-9A-F]{2})/i;
+    return color.replace(hexPattern, (_match, r, g, b) => {
+        return `rgb(${[r, g, b].map(value => (parseInt(value, 16).toString(10))).join(', ')})`;
+    });
+}
+
 export function getColorPalette(colorPalette = DEFAULT_COLOR_PALETTE, measureGroup, afm) {
     const updatedColorPalette = [...colorPalette]; // clone array
     measureGroup.items.forEach((measureItem, measureItemIndex) => {
         if (isPopMeasure(measureItem, afm)) {
             updatedColorPalette[measureItemIndex] =
-                _getLighterColor(updatedColorPalette[measureItemIndex], 0.6);
+                _getLighterColor(normalizeColorToRGB(updatedColorPalette[measureItemIndex]), 0.6);
         }
     });
     return updatedColorPalette;
@@ -57,7 +68,6 @@ export function getSeriesItemData(
     measureGroup,
     viewByAttribute,
     stackByAttribute,
-    checkIfDrillable,
     type,
     colorPalette
 ) {
@@ -70,10 +80,8 @@ export function getSeriesItemData(
         // drillContext can have 1 to 3 items
         // viewBy attribute label, stackby label if available
         // last drillContextItem is always current serie measure
-        const drillHeaderItems = [];
         if (stackByAttribute) {
             // if there is a stackBy attribute, then seriesIndex corresponds to stackBy label index
-            drillHeaderItems.push(stackByAttribute.items[seriesIndex]);
             // pointIndex corresponds to viewBy attribute label (if available)
             viewByIndex = pointIndex;
             // pointIndex also corresponds to measureGroup label
@@ -82,67 +90,19 @@ export function getSeriesItemData(
             // based on the number of attribute values on the same dimension
             measureIndex = Math.floor(pointIndex / stackByAttribute.items.length);
         }
-        if (viewByAttribute) {
-            drillHeaderItems.push(viewByAttribute.items[viewByIndex]);
-        }
-        drillHeaderItems.push(measureGroup.items[measureIndex]);
-
-        const drilldownProps = {
-            drilldown: checkIfDrillable(drillHeaderItems)
-        };
-
-        if (drilldownProps.drilldown) {
-            // mapping of drillHeaderItems to drillContextItems
-            // TODO: handle totalHeaderItems that have only name
-            // TODO: adapt drillHeaderItems items to match this
-            drilldownProps.drillContext = drillHeaderItems.map((wrappedDrillHeaderItem) => {
-                const headerType = Object.keys(wrappedDrillHeaderItem)[0];
-                const {
-                    uri, // header attribute value uri or measure index
-                    identifier = '', // header item identifier or measures identifier
-                    name // header item text label
-                } = wrappedDrillHeaderItem[headerType];
-                /*
-                    old drillable items sample
-                    [
-                        // attribute
-                        {
-                            id: "2012"
-                            identifier: "closed.aag81lMifn6q"
-                            uri: "/gdc/md/tgqkx9leq2tntui4j6fp08tk6epftziu/obj/324"
-                            value: "2012"
-                        },
-                        // measure
-                        {
-                            id: "aaYh6Voua2yj"
-                            identifier: ""
-                            uri: "/gdc/md/tgqkx9leq2tntui4j6fp08tk6epftziu/obj/13465"
-                            value: "aaa <b># of Open Opps.</b>"
-                        }
-                    ]
-                */
-                return {
-                    id: uri, // uri of attribute value
-                    value: name, // text label of attribute value or formatted measure value
-                    // TODO: get attribute uri and identifier based on attribute value header item
-                    identifier, // identifier of attribute or measure
-                    uri: undefined // uri of attribute or measure
-                };
-            });
-        }
-
 
         const pointData = {
             y: parseValue(pointValue),
             marker: {
                 enabled: pointValue !== null
-            },
-            ...drilldownProps
+            }
         };
         if (viewByAttribute) {
             pointData.name = get(viewByAttribute, ['items', viewByIndex, 'attributeHeaderItem', 'name']);
         } else if (!stackByAttribute) {
             pointData.name = get(measureGroup, ['items', pointIndex, 'measureHeaderItem', 'name']);
+        } else {
+            pointData.name = get(stackByAttribute, ['items', seriesIndex, 'attributeHeaderItem', 'name']);
         }
 
         // TODO pie chart measure name
@@ -153,7 +113,7 @@ export function getSeriesItemData(
             // Pie charts use pointData viewByIndex as legendIndex if available instead of seriesItem legendIndex
             pointData.legendIndex = viewByAttribute ? viewByIndex : pointIndex;
         }
-        const format = measureGroup.items[measureIndex].format;
+        const format = measureGroup.items[measureIndex].measureHeaderItem.format;
         if (format) {
             pointData.format = format;
         }
@@ -167,10 +127,8 @@ export function getSeries(
     measureGroup,
     viewByAttribute,
     stackByAttribute,
-    checkIfDrillable,
     type,
-    colorPalette,
-    measureGroupDimension
+    colorPalette
 ) {
     return executionResultData.map((seriesItem, seriesIndex) => {
         const seriesItemData = getSeriesItemData(
@@ -179,15 +137,12 @@ export function getSeries(
             measureGroup,
             viewByAttribute,
             stackByAttribute,
-            checkIfDrillable,
             type,
-            colorPalette,
-            measureGroupDimension
+            colorPalette
         );
         const seriesItemConfig = {
             color: colorPalette[seriesIndex],
             legendIndex: seriesIndex,
-            isDrillable: seriesItemData.some(dataItem => dataItem.drilldown),
             data: seriesItemData
         };
 
@@ -261,6 +216,187 @@ export function generateTooltipFn({ categoryLabel }) {
     };
 }
 
+export function findInDimensionHeaders(dimensions, headerCallback) {
+    let returnValue = null;
+    dimensions.some((dimension, dimensionIndex) => {
+        dimension.headers.some((wrappedHeader, headerIndex) => {
+            const headerType = Object.keys(wrappedHeader)[0];
+            const header = wrappedHeader[headerType];
+            const headerCount = dimension.headers.length;
+            returnValue = headerCallback(headerType, header, dimensionIndex, headerIndex, headerCount);
+            return !!returnValue;
+        });
+        return !!returnValue;
+    });
+    return returnValue;
+}
+
+export function findMeasureGroupInDimensions(dimensions) {
+    return findInDimensionHeaders(dimensions, (headerType, header, dimensionIndex, headerIndex, headerCount) => {
+        const measureGroupHeader = headerType === 'measureGroupHeader' ? header : null;
+        if (measureGroupHeader) {
+            invariant(headerIndex === headerCount - 1, 'MeasureGroup must be the last header in it\'s dimension');
+        }
+        return measureGroupHeader;
+    });
+}
+
+export function findAttributeInDimension(dimension, attributeHeaderItemsDimension) {
+    return findInDimensionHeaders([dimension], (headerType, header) => {
+        if (headerType === 'attributeHeader') {
+            return {
+                ...header,
+                // attribute items are delivered separately from attributeHeaderItems
+                // there should ever only be maximum of one attribute on each dimension, other attributes are ignored
+                items: attributeHeaderItemsDimension[0]
+            };
+        }
+        return null;
+    });
+}
+
+
+export function unwrap(wrappedObject) {
+    return wrappedObject[Object.keys(wrappedObject)[0]];
+}
+
+export function getDrillContext(stackByItem, viewByItem, measure) {
+    return without([
+        stackByItem,
+        viewByItem,
+        measure
+    ], null).map(({
+        uri, // header attribute value or measure uri
+        identifier = '', // header attribute value or measure identifier
+        name, // header attribute value or measure text label
+        attribute // attribute header if available
+    }) => {
+        return {
+            id: uri, // identifier of attribute value
+            // TODO: get formatted measure value
+            value: name, // text label of attribute value or formatted measure value
+            identifier: attribute ? attribute.identifier : identifier, // identifier of attribute or measure
+            uri: attribute ? attribute.uri : uri // uri of attribute or measure
+        };
+    });
+
+    /*
+        old drillable items sample
+        [
+            // attribute
+            {
+                id: "2012"
+                identifier: "closed.aag81lMifn6q"
+                uri: "/gdc/md/tgqkx9leq2tntui4j6fp08tk6epftziu/obj/324"
+                value: "2012"
+            },
+            // measure
+            {
+                id: "aaYh6Voua2yj"
+                identifier: ""
+                uri: "/gdc/md/tgqkx9leq2tntui4j6fp08tk6epftziu/obj/13465"
+                value: "aaa <b># of Open Opps.</b>"
+            }
+        ]
+    */
+}
+
+export function getDrillableSeries(
+    series,
+    drillableItems,
+    measureGroup,
+    viewByAttribute,
+    stackByAttribute,
+    type
+) {
+    const isMetricPieChart = type === PIE_CHART && !viewByAttribute;
+
+    return series.map((seriesItem, seriesIndex) => {
+        let isSeriesDrillable = false;
+        const data = seriesItem.data.map((pointData, pointIndex) => {
+            // measureIndex is usually seriesIndex,
+            // except for stack by attribute and metricOnly pie chart it is looped-around pointIndex instead
+            // Looping around the end of items array only works when measureGroup is the last header on it's dimension
+            // We do not support setups with measureGroup before attributeHeaders
+            const measureIndex = !stackByAttribute && !isMetricPieChart
+                ? seriesIndex
+                : pointIndex % measureGroup.items.length;
+            const measure = unwrap(measureGroup.items[measureIndex]);
+
+            // attributeHeader values over multiple metrics are not a result of carthesian product
+            // viewBy index needs to be devided by number of metrics
+            const viewByIndex = Math.floor(pointIndex / measureGroup.items.length);
+            const viewByItem = viewByAttribute ? {
+                ...unwrap(viewByAttribute.items[viewByIndex]),
+                attribute: viewByAttribute
+            } : null;
+
+            // stackBy item index is always equal to seriesIndex
+            const stackByItem = stackByAttribute ? {
+                ...unwrap(stackByAttribute.items[seriesIndex]),
+                attribute: stackByAttribute
+            } : null;
+
+            // console.log('stackByItem', stackByItem);
+            // console.log('viewByItem', viewByItem);
+            // console.log('measure', measure);
+
+            // point is drillable if a drillableItem matches:
+            //   point's measure,
+            //   point's viewBy attribute,
+            //   point's viewBy attribute item,
+            //   point's stackBy attribute,
+            //   point's stackBy attribute item,
+            const drillableHooks = without([
+                measure,
+                viewByAttribute,
+                viewByItem,
+                stackByAttribute,
+                stackByItem
+            ], null);
+            // drillableHooks.map(hook => (console.log(hook)));
+
+            const drilldown = drillableItems.some(drillableItem => (
+                drillableHooks.some(drillableHook =>
+                    (drillableHook.uri && drillableHook.uri === drillableItem.uri)
+                    || (drillableHook.identifier && drillableHook.identifier === drillableItem.identifier)
+                )
+            ));
+            // console.log('drilldown', drilldown);
+
+            const drillableProps = {
+                drilldown
+            };
+            if (drilldown) {
+                drillableProps.drillContext = getDrillContext(measure, viewByItem, stackByItem);
+                isSeriesDrillable = true;
+            }
+            return {
+                ...pointData,
+                ...drillableProps
+            };
+        });
+
+        return {
+            ...seriesItem,
+            data,
+            isDrillable: isSeriesDrillable
+        };
+    });
+}
+
+/**
+ * Creates an object providing data for all you need to render a chart except drillability.
+ *
+ * @param afm <executionRequest.AFM> object listing metrics and attributes used.
+ * @param resultSpec <executionRequest.resultSpec> object defining expected result dimension structure,
+ * @param dimensions <executionResponse.dimensions> array defining calculated dimensions and their headers,
+ * @param executionResultData <executionResult.data> array with calculated data
+ * @param attributeHeaderItems <executionResult.attributeHeaderItems> array of attribute header items
+ * @param config object defining chart display settings
+ * @param drillableItems array of items for isPointDrillable matching
+ * @return Returns composed chart options object
+ */
 export function getChartOptions(
     afm,
     resultSpec,
@@ -270,98 +406,51 @@ export function getChartOptions(
     config,
     drillableItems
 ) {
-    // As a convention, the attribute on the first dimension is a viewBy attribute
-    // the attribute on second dimension is a stackBy attribute
-    // there should ever only be maximum of one stackBy and one viewBy attribute, so other attributes are thrown away
-    let measureGroup = null;
-    let measureGroupDimension = null;
-    let stackByAttribute = null;
-    let viewByAttribute = null;
+    const measureGroup = findMeasureGroupInDimensions(dimensions);
+    const viewByAttribute = findAttributeInDimension(
+        dimensions[VIEW_BY_DIMENSION_INDEX],
+        attributeHeaderItems[VIEW_BY_DIMENSION_INDEX]
+    );
+    const stackByAttribute = findAttributeInDimension(
+        dimensions[STACK_BY_DIMENSION_INDEX],
+        attributeHeaderItems[STACK_BY_DIMENSION_INDEX]
+    );
 
     // console.log('afm', afm);
     // console.log('resultSpec', resultSpec);
     // console.log('dimensions', dimensions);
     // console.log('executionResultData', executionResultData);
     // console.log('attributeHeaderItems', attributeHeaderItems);
-
-    dimensions.some((dimension, dimensionIndex) => {
-        return dimension.headers.some((wrappedHeader) => {
-            const headerType = Object.keys(wrappedHeader)[0];
-            const header = wrappedHeader[headerType];
-
-            if (headerType === 'attributeHeader') {
-                if (dimensionIndex === 0 && viewByAttribute === null) {
-                    viewByAttribute = cloneDeep(header);
-                    // there is always just one attribute on each dimension, so we can safely pick index 0
-                    viewByAttribute.items = attributeHeaderItems[dimensionIndex][0];
-                } else if (dimensionIndex === 1 && stackByAttribute === null) {
-                    stackByAttribute = cloneDeep(header);
-                    // there is always just one attribute on each dimension, so we can safely pick index 0
-                    stackByAttribute.items = attributeHeaderItems[dimensionIndex][0];
-                }
-            } else if (headerType === 'measureGroupHeader' && measureGroup === null) {
-                measureGroup = header;
-                measureGroupDimension = dimensionIndex;
-            }
-            // no need to finish the lookup if we already found one measureGroup,
-            // one viewByAttribute and one stackByAttribute
-            return viewByAttribute && stackByAttribute && viewByAttribute;
-        });
-    });
+    // console.log('measureGroup', measureGroup);
+    // console.log('stackByAttribute', stackByAttribute);
+    // console.log('viewByAttribute', viewByAttribute);
 
     if (!measureGroup) {
         throw new Error('missing measureGroup');
     }
 
-    // console.log('measureGroup', measureGroup);
-    // console.log('stackByAttribute', stackByAttribute);
-    // console.log('viewByAttribute', viewByAttribute);
-
     const categories = viewByAttribute
         ? viewByAttribute.items.map(({ attributeHeaderItem }) => (attributeHeaderItem.name))
         : [];
 
-    const measureLocalIdentifiers = uniq(measureGroup.items.map(
-        ({ localIdentifier }) => (localIdentifier))
-    );
-    // by default, points are not drillable
-    let checkIfDrillable = () => false;
-
-    const drillableItemLocalIdentifiers = drillableItems.map(drillableItem => (drillableItem.uri));
-
-    if (viewByAttribute && drillableItems.some((drillableItem) => {
-        return drillableItem.uri === viewByAttribute.uri
-            || drillableItem.identifier === viewByAttribute.identifier;
-    })) {
-        // if drillableItems contain a viewBy uri, all points are drillable
-        checkIfDrillable = () => true;
-    } else if (intersection(drillableItemLocalIdentifiers, measureLocalIdentifiers.concat(
-        stackByAttribute ? [stackByAttribute.uri] : []
-    )).length > 0) {
-        // if drillableItems contain a stackBy uri or any measure uris,
-        // a point is drillable if it contains a stackby uri or measure uri in it's drillable context or
-        checkIfDrillable = (drillContext) => {
-            const drillContextUris = drillContext.map(
-                drillContextItem => (drillContextItem.id) // id should be renamed to uri IMHO
-            );
-            return intersection(
-                drillContextUris,
-                measureLocalIdentifiers.concat(stackByAttribute ? stackByAttribute.uri : [])
-            ).length > 0;
-        };
-    }
-
     const colorPalette = getColorPalette(config.colorPalette, measureGroup, afm);
 
-    const series = getSeries(
+    const seriesWithoutDrillability = getSeries(
         executionResultData,
         measureGroup,
         viewByAttribute,
         stackByAttribute,
-        checkIfDrillable,
         config.type,
-        colorPalette,
-        measureGroupDimension
+        colorPalette
+    );
+
+    const series = getDrillableSeries(
+        seriesWithoutDrillability,
+        drillableItems,
+        measureGroup,
+        viewByAttribute,
+        stackByAttribute,
+        config.type
     );
 
     const title = {

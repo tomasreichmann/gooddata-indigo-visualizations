@@ -91,7 +91,7 @@ storiesOf('Chart')
                                     responsive: true
                                 }
                             }}
-                                    data={barChartWithPagedLegend.data}
+                            data={barChartWithPagedLegend.data}
                         />
                     </div>
                 )}
@@ -157,31 +157,17 @@ storiesOf('Chart')
             </IntlWrapper>
         )
     ))
-    .add('old transformation simple bar chart', () => {
-        return screenshotWrap(
-            wrap(
-                <LineFamilyChartTransformation
-                    // orginal props
-                    config={{
-                        ...TestConfig.barChartSimple,
-                        legend: {
-                            enabled: false
-                        },
-                        type: 'column'
-                    }}
-                    data={TestData.barChartSimple}
-                />
-            )
-        );
-    })
     .add('new transformation column chart without attributes', () => {
         const executionData = dataSets.barChartWithoutAttributes;
 
         return screenshotWrap(
             wrap(
                 <ChartTransformation
-                    // orginal props
-                    // new props
+                    drillableItems={[
+                        {
+                            uri: executionData.executionResponse.dimensions[1].headers[0].measureGroupHeader.items[0].measureHeaderItem.uri
+                        }
+                    ]}
                     config={{
                         type: 'column',
                         legend: {
@@ -203,8 +189,11 @@ storiesOf('Chart')
         return screenshotWrap(
             wrap(
                 <ChartTransformation
-                    // orginal props
-                    // new props
+                    drillableItems={[
+                        {
+                            uri: executionData.executionResponse.dimensions[1].headers[0].measureGroupHeader.items[1].measureHeaderItem.uri
+                        }
+                    ]}
                     config={{
                         type: 'column',
                         legend: {
@@ -227,9 +216,9 @@ storiesOf('Chart')
             wrap(
                 <ChartTransformation
                     drillableItems={[
-                        // {
-                        //     uri: response.transformationResponse.dimensions[0].headers[0].uri
-                        // }
+                        {
+                            uri: executionData.executionResponse.dimensions[0].headers[0].attributeHeader.uri
+                        }
                     ]}
                     config={{
                         type: 'column',
@@ -253,9 +242,9 @@ storiesOf('Chart')
             wrap(
                 <ChartTransformation
                     drillableItems={[
-                        // {
-                        //     uri: response.transformationResponse.dimensions[1].headers[0].labels[0].id
-                        // }
+                        {
+                            uri: executionData.executionResult.attributeHeaderItems[0][0][0].attributeHeaderItem.uri
+                        }
                     ]}
                     config={{
                         type: 'column',
@@ -279,9 +268,9 @@ storiesOf('Chart')
             wrap(
                 <ChartTransformation
                     drillableItems={[
-                        // {
-                        //     uri: response.transformationResponse.dimensions[1].headers[0].labels[0].id
-                        // }
+                        {
+                            uri: executionData.executionResult.attributeHeaderItems[0][0][0].attributeHeaderItem.uri
+                        }
                     ]}
                     config={{
                         type: 'column',
@@ -300,14 +289,18 @@ storiesOf('Chart')
     })
     .add('new transformation bar chart with viewBy and stackBy attribute', () => {
         const executionData = dataSets.barChartWithStackByAndViewByAttributes;
-
+        console.log(
+            'drillable by',
+            executionData.executionResult.attributeHeaderItems[1][0][0].attributeHeaderItem.name,
+            executionData.executionResult.attributeHeaderItems[1][0][0].attributeHeaderItem.uri
+        );
         return screenshotWrap(
             wrap(
                 <ChartTransformation
                     drillableItems={[
-                        // {
-                        //     uri: response.transformationResponse.dimensions[1].headers[0].labels[0].id
-                        // }
+                        {
+                            uri: executionData.executionResult.attributeHeaderItems[1][0][0].attributeHeaderItem.uri
+                        }
                     ]}
                     config={{
                         type: 'bar',
@@ -331,9 +324,9 @@ storiesOf('Chart')
             wrap(
                 <ChartTransformation
                     drillableItems={[
-                        // {
-                        //     uri: response.transformationResponse.dimensions[1].headers[0].labels[0].id
-                        // }
+                        {
+                            uri: executionData.executionResult.attributeHeaderItems[0][0][0].attributeHeaderItem.uri
+                        }
                     ]}
                     config={{
                         type: 'line',
@@ -357,9 +350,9 @@ storiesOf('Chart')
             wrap(
                 <ChartTransformation
                     drillableItems={[
-                        // {
-                        //     uri: response.transformationResponse.dimensions[1].headers[0].labels[0].id
-                        // }
+                        {
+                            uri: executionData.executionResult.attributeHeaderItems[0][0][0].attributeHeaderItem.uri
+                        }
                     ]}
                     config={{
                         type: 'pie',
@@ -383,9 +376,9 @@ storiesOf('Chart')
             wrap(
                 <ChartTransformation
                     drillableItems={[
-                        // {
-                        //     uri: data.executionResponse.dimensions[0].headers[0].!!!items[0].id
-                        // }
+                        {
+                            uri: executionData.executionResponse.dimensions[0].headers[0].measureGroupHeader.items[1].measureHeaderItem.uri
+                        }
                     ]}
                     config={{
                         type: 'pie',
