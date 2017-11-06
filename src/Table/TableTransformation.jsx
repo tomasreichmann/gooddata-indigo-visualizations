@@ -4,7 +4,7 @@ import { pick } from 'lodash';
 
 import Table from './Table';
 import DrillableItem from '../proptypes/DrillableItem';
-import { getHeaders, getRows } from './utils/dataTransformation';
+import { getHeaders, getRows, validateTableProportions } from './utils/dataTransformation';
 import { getSortInfo, getSortItem } from './utils/sort';
 
 function renderDefaultTable(props) {
@@ -49,6 +49,8 @@ export default class TableTransformation extends Component {
 
         const headers = getHeaders(executionResponse);
         const rows = getRows(executionResult);
+
+        validateTableProportions(headers, rows);
 
         const sortItem = getSortItem(executionRequest);
         const { sortBy, sortDir } = getSortInfo(sortItem, headers);

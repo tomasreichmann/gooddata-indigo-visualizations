@@ -31,10 +31,6 @@ function getAttributeHeaders(attributeDimension) {
 function getMeasureHeaders(measureDimension) {
     const measureDimensionHeaders = get(measureDimension, 'headers');
 
-    if (!measureDimensionHeaders) {
-        return [];
-    }
-
     // TODO check if each header contains uri, identifier, localIdentifier, name, format
     return get(measureDimensionHeaders[0], ['measureGroupHeader', 'items'], [])
         .map(
@@ -71,4 +67,10 @@ export function getRows(executionResult) {
     const measureValues = get(executionResult, 'data');
 
     return zip(...attributeValues, ...measureValues);
+}
+
+export function validateTableProportions(headers, rows) {
+    if (rows.length > 0 && headers.length !== rows[0].length) {
+        throw new Error('Number of table columns must be equal to number of table headers');
+    }
 }
