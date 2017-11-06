@@ -35,6 +35,13 @@ describe('Table utils - Cell', () => {
             });
         });
 
+        it('should get empty string when there is no cell content', () => {
+            expect(getStyledLabel(FIRST_MEASURE_HEADER, null)).toEqual({
+                style: {},
+                label: ''
+            });
+        });
+
         it('should get styled label for measure without color', () => {
             expect(getStyledLabel(FIRST_MEASURE_HEADER, '1234567.89')).toEqual({
                 style: {},

@@ -14,12 +14,6 @@ import {
     EXECUTION_RESULT_2A_1M
 } from '../src/Table/fixtures/2attributes1measure';
 
-import {
-    EXECUTION_REQUEST_POP,
-    EXECUTION_RESPONSE_POP,
-    EXECUTION_RESULT_POP
-} from '../src/Table/fixtures/periodOverPeriod';
-
 function generateExecutionRequest() {
     // no needed exact executionRequest for these storybook usages where is no sorting
     return {
@@ -141,20 +135,6 @@ storiesOf('Table')
                     onSortChange={action('Sort changed')}
                 />
                 <div style={{ height: 800 }} />
-            </div>
-        )
-    ))
-    .add('Empty cells', () => (
-        screenshotWrap(
-            <div>
-                <TableTransformation
-                    executionRequest={EXECUTION_REQUEST_POP}
-                    executionResponse={EXECUTION_RESPONSE_POP}
-                    executionResult={EXECUTION_RESULT_POP}
-                    height={400}
-                    onSortChange={action('Sort changed')}
-                    width={600}
-                />
             </div>
         )
     ))
