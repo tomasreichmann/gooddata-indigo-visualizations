@@ -21,7 +21,8 @@ export function getStyledLabel(header, cellContent) {
         return { style: {}, label: cellContent.name };
     }
 
-    const formattedNumber = numberFormat(parseFloat(cellContent), header.format);
+    const numberInString = cellContent === null ? '' : parseFloat(cellContent);
+    const formattedNumber = numberFormat(numberInString, header.format);
     const { label, color } = colors2Object(formattedNumber);
     const style = color ? { color } : {};
 

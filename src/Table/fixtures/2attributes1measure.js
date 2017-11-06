@@ -2,13 +2,13 @@ export const EXECUTION_REQUEST_2A_1M = {
     afm: {
         attributes: [
             {
-                localIdentifier: '1st_attr_local_identifier',
+                localIdentifier: 'owner_name',
                 displayForm: {
                     uri: '/gdc/md/tgqkx9leq2tntui4j6fp08tk6epftziu/obj/1028'
                 }
             },
             {
-                localIdentifier: '2nd_attr_local_identifier',
+                localIdentifier: 'stage_name',
                 displayForm: {
                     uri: '/gdc/md/tgqkx9leq2tntui4j6fp08tk6epftziu/obj/1805'
                 }
@@ -16,7 +16,7 @@ export const EXECUTION_REQUEST_2A_1M = {
         ],
         measures: [
             {
-                localIdentifier: '1st_measure_local_identifier',
+                localIdentifier: 'num_of_open_opps',
                 definition: {
                     measure: {
                         item: {
@@ -31,7 +31,7 @@ export const EXECUTION_REQUEST_2A_1M = {
         dimensions: [
             {
                 name: 'a',
-                itemIdentifiers: ['1st_attr_local_identifier', '2nd_attr_local_identifier']
+                itemIdentifiers: ['owner_name', 'stage_name']
             },
             {
                 name: 'm',
@@ -86,7 +86,7 @@ export const EXECUTION_RESPONSE_2A_1M = {
         }
     ],
     links: {
-        dataResult: '/gdc/app/projects/project_id/executionResults/foo?q=bar&c=baz&dimension=a&dimension=m'
+        executionResult: '/gdc/app/projects/project_id/executionResults/foo?q=bar&c=baz&dimension=a&dimension=m'
     }
 };
 
