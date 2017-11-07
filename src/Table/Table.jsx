@@ -22,7 +22,7 @@ export default class Table extends PureComponent {
                 {dimensions => (
                     <div className="viz-table-wrap" style={{ height: '100%', width: '100%' }}>
                         <TableVisualization
-                            {...this.props} // TODO don't use spread operator
+                            {...this.props}
                             containerHeight={containerHeight || dimensions.height}
                             containerWidth={containerWidth || dimensions.width}
                         />

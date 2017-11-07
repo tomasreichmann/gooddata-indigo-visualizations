@@ -384,18 +384,19 @@ export default class TableVisualization extends Component {
 
         return (cellProps) => {
             const { rowIndex, columnKey } = cellProps;
-            const row = rows[rowIndex]; // TODO what if rows is empty array?
+            const row = rows[rowIndex];
             const cellContent = row[columnKey];
             const classes = getCellClassNames(rowIndex, columnKey, drillable);
             const { style, label } = getStyledLabel(header, cellContent);
 
             // TODO backward compatibility for headers and rows
-            // TODO transform headers to id, identifier, etc.
-            // TODO transform rows to {id, name}
+            // transform headers to id, identifier, etc.
+            // transform rows to {id, name}
+
             /*
             function getAttributeIdFromAttributeUri(attributeUri) {
                 // TODO check regex "?id=" not only "="
-                // TODO only numbers after regex
+                // only numbers after regex
                 return attributeUri.substr(attributeUri.lastIndexOf('=') + 1);
             }
              */

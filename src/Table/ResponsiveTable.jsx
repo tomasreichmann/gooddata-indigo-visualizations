@@ -88,7 +88,7 @@ export default class ResponsiveTable extends Component {
         const props = this.props;
 
         const tableProps = {
-            ...props, // TODO don't use spread operator
+            ...props,
             rows: props.rows.slice(0, this.getRowCount(this.state.page)),
             containerHeight: 0,
             containerMaxHeight: this.getContainerMaxHeight(),

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { pick } from 'lodash';
+import { noop, pick } from 'lodash';
 
 import Table from './Table';
 import DrillableItem from '../proptypes/DrillableItem';
@@ -30,7 +30,7 @@ export default class TableTransformation extends Component {
         config: {},
         drillableItems: [],
         height: undefined,
-        onSortChange: () => {},
+        onSortChange: noop,
         tableRenderer: renderDefaultTable,
         width: undefined
     };

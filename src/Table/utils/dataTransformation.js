@@ -1,4 +1,6 @@
-import { assign, get, zip } from 'lodash';
+import { get, isEqual, keys, zip } from 'lodash';
+
+const REQUIRED_ATTRIBUTE_TABLE_HEADER_ELEMENTS = ['uri', 'identifier', 'localIdentifier', 'name'];
 
 function getAttributeAndMeasureResponseDimensions(executionResponse) {
     const dimensions = get(executionResponse, 'dimensions', []);
@@ -17,27 +19,53 @@ function getAttributeAndMeasureResponseDimensions(executionResponse) {
     return { attributeResponseDimension, measureResponseDimension };
 }
 
+function validateAttributeTableHeaderElements(attributeTableHeader) {
+    if (!isEqual(keys(attributeTableHeader), REQUIRED_ATTRIBUTE_TABLE_HEADER_ELEMENTS)) {
+        throw new Error(
+            'Attribute table header doesn\'t contain all of required elements. ' +
+            `Required attribute table header elements are: ${REQUIRED_ATTRIBUTE_TABLE_HEADER_ELEMENTS}.`
+        );
+    }
+
+    return attributeTableHeader;
+}
+
+function validateMeasureTableHeaderElements(measureTableHeader) {
+    const requiredMeasureTableHeaderElements = REQUIRED_ATTRIBUTE_TABLE_HEADER_ELEMENTS.concat(['format']);
+
+    if (!isEqual(keys(measureTableHeader), requiredMeasureTableHeaderElements)) {
+        throw new Error(
+            'Measure table header doesn\'t contain all of required elements. ' +
+            `Required measure table header elements are: ${requiredMeasureTableHeaderElements}.`
+        );
+    }
+
+    return measureTableHeader;
+}
+
 function getAttributeHeaders(attributeDimension) {
-    // TODO check if each header contains uri, identifier, localIdentifier, name
     return get(attributeDimension, 'headers', [])
         .map(
-            attributeHeader => assign(
-                get(attributeHeader, 'attributeHeader'),
-                { type: 'attribute' }
-            )
+            (attributeHeader) => {
+                return {
+                    ...validateAttributeTableHeaderElements(get(attributeHeader, 'attributeHeader')),
+                    ...{ type: 'attribute' }
+                };
+            }
         );
 }
 
 function getMeasureHeaders(measureDimension) {
     const measureDimensionHeaders = get(measureDimension, 'headers');
 
-    // TODO check if each header contains uri, identifier, localIdentifier, name, format
     return get(measureDimensionHeaders[0], ['measureGroupHeader', 'items'], [])
         .map(
-            measureHeader => assign(
-                get(measureHeader, 'measureHeaderItem'),
-                { type: 'measure' }
-            )
+            (measureHeader) => {
+                return {
+                    ...validateMeasureTableHeaderElements(get(measureHeader, 'measureHeaderItem')),
+                    ...{ type: 'measure' }
+                };
+            }
         );
 }
 
