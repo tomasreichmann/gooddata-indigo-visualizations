@@ -22,12 +22,46 @@ const MEASURE_SORT_ITEM = {
     }
 };
 
+const ATTRIBUTE_SORT_ITEM_WITHOUT_DIRECTION = {
+    attributeSortItem: {
+        attributeIdentifier: '2nd_attr_local_identifier'
+    }
+};
+
+const ATTRIBUTE_SORT_ITEM_WITHOUT_ATTRIBUTE_IDENTIFIER = {
+    attributeSortItem: {
+        direction: ASC
+    }
+};
+
+const MEASURE_SORT_ITEM_WITHOUT_DIRECTION = {
+    measureSortItem: {
+        locators: [
+            {
+                measureLocatorItem: {
+                    measureIdentifier: '2nd_measure_local_identifier'
+                }
+            }
+        ]
+    }
+};
+
 const MEASURE_SORT_ITEM_WITHOUT_LOCATORS = {
     measureSortItem: {
         direction: DESC
     }
 };
 
+const MEASURE_SORT_ITEM_WITHOUT_MEASURE_IDENTIFIER = {
+    measureSortItem: {
+        direction: DESC,
+        locators: [
+            {
+                measureLocatorItem: {}
+            }
+        ]
+    }
+};
 
 const MEASURE_SORT_ITEM_WITH_TWO_LOCATORS = {
     measureSortItem: {
@@ -139,16 +173,40 @@ describe('Table utils - Sort', () => {
             }).toThrow('Unknown sort item: foo');
         });
 
+        it('should throw error for attribute sort item without direction', () => {
+            expect(() => {
+                getSortInfo(ATTRIBUTE_SORT_ITEM_WITHOUT_DIRECTION, TABLE_HEADERS_2A_3M);
+            }).toThrow('Attribute sort item doesn\'t contain direction');
+        });
+
+        it('should throw error for attribute sort item without attribute identifier', () => {
+            expect(() => {
+                getSortInfo(ATTRIBUTE_SORT_ITEM_WITHOUT_ATTRIBUTE_IDENTIFIER, TABLE_HEADERS_2A_3M);
+            }).toThrow('Attribute sort item doesn\'t contain attribute identifier');
+        });
+
+        it('should throw error for measure sort item without direction', () => {
+            expect(() => {
+                getSortInfo(MEASURE_SORT_ITEM_WITHOUT_DIRECTION, TABLE_HEADERS_2A_3M);
+            }).toThrow('Measure sort item doesn\'t contain direction');
+        });
+
         it('should throw error for measure sort item without locators', () => {
             expect(() => {
                 getSortInfo(MEASURE_SORT_ITEM_WITHOUT_LOCATORS, TABLE_HEADERS_2A_3M);
-            }).toThrow('Measure sort item doesn\'t contains locators');
+            }).toThrow('Measure sort item doesn\'t contain locators');
+        });
+
+        it('should throw error for measure sort item without measure identifier', () => {
+            expect(() => {
+                getSortInfo(MEASURE_SORT_ITEM_WITHOUT_MEASURE_IDENTIFIER, TABLE_HEADERS_2A_3M);
+            }).toThrow('Measure sort item doesn\'t contain measure identifier');
         });
 
         it('should throw error for measure sort item which contains more than one locator', () => {
             expect(() => {
                 getSortInfo(MEASURE_SORT_ITEM_WITH_TWO_LOCATORS, TABLE_HEADERS_2A_3M);
-            }).toThrow('Measure sort item couldn\'t contain more tha one locator');
+            }).toThrow('Measure sort item couldn\'t contain more than one locator');
         });
 
         it('should throw error for sort identifier which ism\'t included in table headers', () => {

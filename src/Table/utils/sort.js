@@ -16,23 +16,34 @@ function getSortBy(tableHeaders, sortItemLocalIdentifier) {
 }
 
 function getSortItemAttributeIdentifier(sortItem) {
-    return get(sortItem, ['attributeSortItem', 'attributeIdentifier']); // TODO should be undefined
+    const sortItemAttributeIdentifier = get(sortItem, ['attributeSortItem', 'attributeIdentifier']);
+
+    if (!sortItemAttributeIdentifier) {
+        throw new Error('Attribute sort item doesn\'t contain attribute identifier');
+    }
+
+    return sortItemAttributeIdentifier;
 }
 
 function getSortItemMeasureIdentifier(sortItem) {
-    const locators = get(sortItem, ['measureSortItem', 'locators']); // TODO should be undefined
+    const locators = get(sortItem, ['measureSortItem', 'locators']);
 
     if (!locators) {
-        throw new Error('Measure sort item doesn\'t contains locators');
+        throw new Error('Measure sort item doesn\'t contain locators');
     }
 
     if (locators.length > 1) {
-        throw new Error('Measure sort item couldn\'t contain more tha one locator');
+        throw new Error('Measure sort item couldn\'t contain more than one locator');
     }
 
     const firstLocator = first(locators);
+    const sortItemMeasureIdentifier = get(firstLocator, ['measureLocatorItem', 'measureIdentifier']);
 
-    return get(firstLocator, ['measureLocatorItem', 'measureIdentifier']); // TODO should be undefined
+    if (!sortItemMeasureIdentifier) {
+        throw new Error('Measure sort item doesn\'t contain measure identifier');
+    }
+
+    return sortItemMeasureIdentifier;
 }
 
 export function getHeaderSortClassName(sortDir) {
@@ -72,14 +83,24 @@ export function getSortInfo(sortItem, tableHeaders) {
     if (has(sortItem, 'attributeSortItem')) {
         const sortItemIdentifier = getSortItemAttributeIdentifier(sortItem);
         const sortBy = getSortBy(tableHeaders, sortItemIdentifier);
-        const sortDir = get(sortItem, ['attributeSortItem', 'direction']); // TODO should be undefined
+        const sortDir = get(sortItem, ['attributeSortItem', 'direction']);
+
+        if (!sortDir) {
+            throw new Error('Attribute sort item doesn\'t contain direction');
+        }
+
         return { sortBy, sortDir };
     }
 
     if (has(sortItem, 'measureSortItem')) {
         const sortItemIdentifier = getSortItemMeasureIdentifier(sortItem);
         const sortBy = getSortBy(tableHeaders, sortItemIdentifier);
-        const sortDir = get(sortItem, ['measureSortItem', 'direction']); // TODO should be undefined
+        const sortDir = get(sortItem, ['measureSortItem', 'direction']);
+
+        if (!sortDir) {
+            throw new Error('Measure sort item doesn\'t contain direction');
+        }
+
         return { sortBy, sortDir };
     }
 
