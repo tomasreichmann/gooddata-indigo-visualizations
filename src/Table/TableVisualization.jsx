@@ -49,7 +49,7 @@ export default class TableVisualization extends Component {
     };
 
     static defaultProps = {
-        afterRender: () => {},
+        afterRender: noop,
         containerHeight: null,
         containerMaxHeight: null,
         drillableItems: [],

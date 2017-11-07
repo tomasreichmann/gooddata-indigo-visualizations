@@ -26,7 +26,7 @@ export default class TableTransformation extends Component {
     };
 
     static defaultProps = {
-        afterRender: () => {},
+        afterRender: noop,
         config: {},
         drillableItems: [],
         height: undefined,

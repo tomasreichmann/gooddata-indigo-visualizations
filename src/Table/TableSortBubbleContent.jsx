@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import { noop } from 'lodash';
 
 import { ASC, DESC } from './constants/sort';
 
@@ -15,8 +16,8 @@ export class TableSortBubbleContent extends Component {
 
     static defaultProps = {
         activeSortDir: null,
-        onClose: () => {},
-        onSortChange: () => {}
+        onClose: noop,
+        onSortChange: noop
     };
 
     constructor(props) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { mount } from 'enzyme';
-import { range } from 'lodash';
+import { noop, range } from 'lodash';
 
 import { withIntl } from '../../test/utils';
 import ResponsiveTable from '../ResponsiveTable';
@@ -17,8 +17,8 @@ const getLess = wrapper => wrapper.find('.s-show_less');
 describe('Responsive Table', () => {
     function renderTable(tableData, customProps = {}) {
         const props = {
-            onMore: () => {},
-            onLess: () => {},
+            onMore: noop,
+            onLess: noop,
             ...customProps
         };
         return mount(
