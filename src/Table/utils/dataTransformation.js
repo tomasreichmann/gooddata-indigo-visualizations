@@ -1,4 +1,4 @@
-import { get, isEqual, keys, zip } from 'lodash';
+import { get, isEqual, isObject, keys, zip } from 'lodash';
 
 const REQUIRED_ATTRIBUTE_TABLE_HEADER_ELEMENTS = ['uri', 'identifier', 'localIdentifier', 'name'];
 
@@ -101,4 +101,41 @@ export function validateTableProportions(headers, rows) {
     if (rows.length > 0 && headers.length !== rows[0].length) {
         throw new Error('Number of table columns must be equal to number of table headers');
     }
+}
+
+export function getBackwardCompatibleHeaderForDrilling(header) {
+    if (header.type === 'attribute') {
+        return {
+            type: 'attrLabel',
+            id: header.localIdentifier,
+            identifier: header.localIdentifier,
+            uri: header.uri,
+            title: header.name
+        };
+    }
+
+    return {
+        type: 'metric',
+        id: header.localIdentifier,
+        identifier: '',
+        uri: header.uri,
+        title: header.name,
+        format: header.format
+    };
+}
+
+function getAttributeElementIdFromAttributeElementUri(attributeElementUri) {
+    const match = '/elements?id=';
+    return attributeElementUri.slice(attributeElementUri.lastIndexOf(match) + match.length);
+}
+
+export function getBackwardCompatibleRowForDrilling(row) {
+    return row.map((cell) => {
+        return isObject(cell) ?
+            {
+                id: getAttributeElementIdFromAttributeElementUri(cell.uri),
+                name: cell.name
+            } :
+            cell;
+    });
 }

@@ -1,5 +1,11 @@
 import { omit } from 'lodash';
-import { getHeaders, getRows, validateTableProportions } from '../dataTransformation';
+import {
+    getBackwardCompatibleHeaderForDrilling,
+    getBackwardCompatibleRowForDrilling,
+    getHeaders,
+    getRows,
+    validateTableProportions
+} from '../dataTransformation';
 
 import {
     EXECUTION_RESPONSE_1A,
@@ -259,6 +265,7 @@ describe('Table utils - Data transformation', () => {
                 }).toThrow();
             });
         });
+
         describe('Measure table header elements', () => {
             const measureHeaderItem = {
                 uri: '/gdc/md/project_id/obj/1st_measure_uri_id',
@@ -404,6 +411,39 @@ describe('Table utils - Data transformation', () => {
             expect(() => {
                 validateTableProportions(TABLE_HEADERS_1A_2M, TABLE_ROWS_1A);
             }).toThrow(errorMessage);
+        });
+    });
+
+    describe('Backward compatible table headers and table rows for drilling', () => {
+        it('should get backward compatible header for attribute', () => {
+            expect(getBackwardCompatibleHeaderForDrilling(TABLE_HEADERS_1A[0])).toEqual({
+                type: 'attrLabel',
+                id: '1st_attr_local_identifier',
+                identifier: '1st_attr_local_identifier',
+                uri: '/gdc/md/project_id/obj/1st_attr_df_uri_id',
+                title: 'Product'
+            });
+        });
+
+        it('should get backward compatible header for measure', () => {
+            expect(getBackwardCompatibleHeaderForDrilling(TABLE_HEADERS_1M[0])).toEqual({
+                type: 'metric',
+                id: '1st_measure_local_identifier',
+                identifier: '',
+                uri: '/gdc/md/project_id/obj/1st_measure_uri_id',
+                title: 'Lost',
+                format: '$#,##0.00'
+            });
+        });
+
+        it('should get backward compatible row for measure', () => {
+            expect(getBackwardCompatibleRowForDrilling(TABLE_ROWS_2A_3M[0])).toEqual([
+                { id: '3', name: 'Computer' },
+                { id: '71', name: 'East Coast' },
+                '1953605.55',
+                '2115472',
+                '285287.96'
+            ]);
         });
     });
 });

@@ -11,6 +11,7 @@ import BubbleHoverTrigger from '@gooddata/goodstrap/lib/Bubble/BubbleHoverTrigge
 import TableSortBubbleContent from './TableSortBubbleContent';
 import DrillableItem from '../proptypes/DrillableItem';
 import { getCellClassNames, getColumnAlign, getStyledLabel } from './utils/cell';
+import { getBackwardCompatibleHeaderForDrilling, getBackwardCompatibleRowForDrilling } from './utils/dataTransformation';
 import { cellClick, isDrillable } from '../utils/drilldownEventing';
 import { getHeaderSortClassName, getNextSortDir } from './utils/sort';
 import {
@@ -389,18 +390,6 @@ export default class TableVisualization extends Component {
             const classes = getCellClassNames(rowIndex, columnKey, drillable);
             const { style, label } = getStyledLabel(header, cellContent);
 
-            // TODO backward compatibility for headers and rows
-            // transform headers to id, identifier, etc.
-            // transform rows to {id, name}
-
-            /*
-            function getAttributeIdFromAttributeUri(attributeUri) {
-                // TODO check regex "?id=" not only "="
-                // only numbers after regex
-                return attributeUri.substr(attributeUri.lastIndexOf('=') + 1);
-            }
-             */
-
             const cellPropsDrill = drillable ? assign({}, cellProps, {
                 onClick(e) {
                     cellClick(
@@ -408,8 +397,8 @@ export default class TableVisualization extends Component {
                         {
                             columnIndex: columnKey,
                             rowIndex,
-                            row,
-                            intersection: [header]
+                            row: getBackwardCompatibleRowForDrilling(row),
+                            intersection: [getBackwardCompatibleHeaderForDrilling(header)]
                         },
                         e.target
                     );
