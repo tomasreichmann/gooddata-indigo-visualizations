@@ -30,11 +30,9 @@ export const EXECUTION_REQUEST_2A_1M = {
     resultSpec: {
         dimensions: [
             {
-                name: 'a',
                 itemIdentifiers: ['owner_name', 'stage_name']
             },
             {
-                name: 'm',
                 itemIdentifiers: ['measureGroup']
             }
         ]
@@ -44,7 +42,6 @@ export const EXECUTION_REQUEST_2A_1M = {
 export const EXECUTION_RESPONSE_2A_1M = {
     dimensions: [
         {
-            name: 'a',
             headers: [
                 {
                     attributeHeader: {
@@ -65,7 +62,6 @@ export const EXECUTION_RESPONSE_2A_1M = {
             ]
         },
         {
-            name: 'm',
             headers: [
                 {
                     measureGroupHeader: {

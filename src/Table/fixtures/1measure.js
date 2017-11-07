@@ -16,11 +16,9 @@ export const EXECUTION_REQUEST_1M = {
     resultSpec: {
         dimensions: [
             {
-                name: 'a',
                 itemIdentifiers: []
             },
             {
-                name: 'm',
                 itemIdentifiers: ['measureGroup']
             }
         ]
@@ -30,11 +28,9 @@ export const EXECUTION_REQUEST_1M = {
 export const EXECUTION_RESPONSE_1M = {
     dimensions: [
         {
-            name: 'a',
             headers: []
         },
         {
-            name: 'm',
             headers: [
                 {
                     measureGroupHeader: {

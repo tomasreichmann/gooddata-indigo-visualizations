@@ -37,11 +37,9 @@ export const EXECUTION_REQUEST_POP = {
     resultSpec: {
         dimensions: [
             {
-                name: 'a',
                 itemIdentifiers: ['date_attr_local_identifier']
             },
             {
-                name: 'm',
                 itemIdentifiers: ['measureGroup']
             }
         ]
@@ -51,7 +49,6 @@ export const EXECUTION_REQUEST_POP = {
 export const EXECUTION_RESPONSE_POP = {
     dimensions: [
         {
-            name: 'a',
             headers: [
                 {
                     attributeHeader: {
@@ -64,7 +61,6 @@ export const EXECUTION_RESPONSE_POP = {
             ]
         },
         {
-            name: 'm',
             headers: [
                 {
                     measureGroupHeader: {

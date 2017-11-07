@@ -59,11 +59,9 @@ function generateExecutionResponse(columns, rows) {
     return {
         dimensions: [
             {
-                name: 'a',
                 headers: generateAttributeHeaders(columns, rows)
             },
             {
-                name: 'm',
                 headers: []
             }
         ],

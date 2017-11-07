@@ -50,11 +50,9 @@ export const EXECUTION_REQUEST_2A_3M = {
     resultSpec: {
         dimensions: [
             {
-                name: 'a',
                 itemIdentifiers: ['1st_attr_local_identifier', '2nd_attr_local_identifier']
             },
             {
-                name: 'm',
                 itemIdentifiers: ['measureGroup']
             }
         ]
@@ -64,7 +62,6 @@ export const EXECUTION_REQUEST_2A_3M = {
 export const EXECUTION_RESPONSE_2A_3M = {
     dimensions: [
         {
-            name: 'a',
             headers: [
                 {
                     attributeHeader: {
@@ -85,7 +82,6 @@ export const EXECUTION_RESPONSE_2A_3M = {
             ]
         },
         {
-            name: 'm',
             headers: [
                 {
                     measureGroupHeader: {

@@ -177,7 +177,7 @@ describe('Table utils - Data transformation', () => {
             expect(() => {
                 getHeaders({
                     dimensions: [
-                        { name: 'First dimension', headers: [] }
+                        { headers: [] }
                     ]
                 });
             }).toThrow(errorMessage);
@@ -187,9 +187,9 @@ describe('Table utils - Data transformation', () => {
             expect(() => {
                 getHeaders({
                     dimensions: [
-                        { name: 'First dimension', headers: [] },
-                        { name: 'Second dimension', headers: [] },
-                        { name: 'Third dimension', headers: [] }
+                        { headers: [] },
+                        { headers: [] },
+                        { headers: [] }
                     ]
                 });
             }).toThrow(errorMessage);

@@ -12,11 +12,9 @@ export const EXECUTION_REQUEST_1A = {
     resultSpec: {
         dimensions: [
             {
-                name: 'a',
                 itemIdentifiers: ['1st_attr_local_identifier']
             },
             {
-                name: 'm',
                 itemIdentifiers: []
             }
         ]
@@ -26,7 +24,6 @@ export const EXECUTION_REQUEST_1A = {
 export const EXECUTION_RESPONSE_1A = {
     dimensions: [
         {
-            name: 'a',
             headers: [
                 {
                     attributeHeader: {
@@ -39,7 +36,6 @@ export const EXECUTION_RESPONSE_1A = {
             ]
         },
         {
-            name: 'm',
             headers: []
         }
     ],
