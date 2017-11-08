@@ -1,4 +1,4 @@
-import { range } from 'lodash';
+import { range, setWith, clone } from 'lodash';
 import {
     isNegativeValueIncluded,
     validateData,
@@ -12,6 +12,7 @@ import {
     getSeries,
     getDrillContext,
     getDrillableSeries,
+    customEscape,
     generateTooltipFn,
     getChartOptions,
     PIE_CHART_LIMIT,
@@ -78,6 +79,8 @@ function getSeriesItemDataParameters(dataSet, seriesIndex) {
         ...getMVS(dataSet)
     ];
 }
+
+const immutableSet = (dataSet, path, newValue) => setWith({ ...dataSet }, path, newValue, clone);
 
 describe('chartOptionsBuilder', () => {
     const barChartWithStackByAndViewByAttributesOptions = mockChartOptions();
@@ -362,19 +365,6 @@ describe('chartOptionsBuilder', () => {
     });
 
     describe('getSeriesItemData', () => {
-        // const dataSetKeys = Object.keys(dataSets).filter(dataSetKey => dataSetKey !== 'default');
-
-        // function getUseCases(useCaseIds) {
-        //     return dataSetKeys.filter(dataSetKey => (useCaseIds.includes(dataSetKey))).map((dataSetKey) => {
-        //         const name = dataSetKey.replace(/([A-Z0-9])/g, ' $1').toLowerCase();
-        //         const dataSet = dataSets[dataSetKey];
-        //         return {
-        //             name,
-        //             dataSet
-        //         };
-        //     });
-        // }
-
         describe('in usecase of bar chart with pop measure and view by attribute', () => {
             const parameters = getSeriesItemDataParameters(dataSets.barChartWithPopMeasureAndViewByAttribute, 0);
             const seriesItemData = getSeriesItemData(
@@ -382,6 +372,19 @@ describe('chartOptionsBuilder', () => {
                 'column',
                 DEFAULT_COLOR_PALETTE
             );
+
+            it('should fill correct pointData name', () => {
+                expect(
+                    seriesItemData.map(pointData => pointData.name)
+                ).toEqual([
+                    'Amount previous year',
+                    'Amount previous year',
+                    'Amount previous year',
+                    'Amount previous year',
+                    'Amount previous year',
+                    'Amount previous year'
+                ]);
+            });
 
             it('should parse all pointData values', () => {
                 expect(
@@ -801,211 +804,369 @@ describe('chartOptionsBuilder', () => {
         });
     });
 
-    describe('getChartOptions', () => {
-        // categories
-
+    describe('customEscape', () => {
+        it('should encode non work characters', () => {
+            const source = 'qwertzuiopasdfghjklyxcvbnm1234567890/(!`?:_';
+            const expected = 'qwertzuiopasdfghjklyxcvbnm1234567890&#47;&#40;&#33;&#96;&#63;&#58;_';
+            expect(customEscape(source)).toBe(expected);
+        });
+        it('should encode some characters into named html entities', () => {
+            const source = '&"<>';
+            const expected = '&amp;&quot;&lt;&gt;';
+            expect(customEscape(source)).toBe(expected);
+        });
+        it('should keep &lt; and &gt; untouched (unescape -> escape)', () => {
+            const source = '&lt;&gt;';
+            const expected = '&lt;&gt;';
+            expect(customEscape(source)).toBe(expected);
+        });
     });
 
-    describe.skip('generateTooltipFn', () => {
-        const tooltipFnOptions = { categoryAxisLabel: 'category-label' };
+    describe('generateTooltipFn', () => {
+        const dataSet = dataSets.barChartWithViewByAttribute;
+        const mVS = getMVS(dataSet);
+        const viewByAttribute = mVS[1];
+        const pointData = {
+            y: 1,
+            format: '# ###',
+            name: 'point',
+            category: 'category',
+            series: {
+                name: 'series'
+            }
+        };
+
+        function getValues(string) {
+            const test = />([^<]+)<\/td>/g;
+            const result = string.match(test).map(match => match.slice(1, -5));
+            return (result && result.length) >= 2 ? Array.from(result) : null;
+        }
 
         describe('unescaping angle brackets and htmlescaping the whole value', () => {
-            const generatedTooltip = generateTooltipFn(tooltipFnOptions);
+            const tooltipFn = generateTooltipFn(viewByAttribute, 'column');
 
             it('should keep &lt; and &gt; untouched (unescape -> escape)', () => {
-                const tooltip = generatedTooltip({
-                    y: 1,
+                const tooltip = tooltipFn({
+                    ...pointData,
                     series: {
                         name: '&lt;series&gt;'
                     }
                 });
-
-                expect(tooltip.includes('&lt;series&gt;')).toEqual(true);
+                expect(getValues(tooltip)).toEqual(['Department', 'category', '&lt;series&gt;', ' 1']);
             });
 
-            it('should escape other html chars and have output properly escaped', () => {
-                const tooltip = generatedTooltip({
-                    y: 1,
+            it('should escape other html chars in series name and have output properly escaped', () => {
+                const tooltip = tooltipFn({
+                    ...pointData,
                     series: {
                         name: '"&\'&lt;'
                     }
                 });
-
-                expect(tooltip.includes('&quot;&amp;&#39;&lt;')).toEqual(true);
+                expect(getValues(tooltip)).toEqual(['Department', 'category', '&quot;&amp;&#39;&lt;', ' 1']);
             });
 
             it('should unescape brackets and htmlescape category', () => {
-                const tooltip = generatedTooltip({
+                const tooltip = tooltipFn({
+                    ...pointData,
+                    category: '&gt;"&\'&lt;'
+                });
+                expect(getValues(tooltip)).toEqual(['Department', '&gt;&quot;&amp;&#39;&lt;', 'series', ' 1']);
+            });
+        });
+
+        it('should render correct values in usecase of bar chart without attribute', () => {
+            const tooltipFn = generateTooltipFn(null, 'column');
+            const tooltip = tooltipFn(pointData);
+            expect(getValues(tooltip)).toEqual(['series', ' 1']);
+        });
+
+        it('should render correct values in usecase of pie chart with an attribute', () => {
+            const tooltipFn = generateTooltipFn(viewByAttribute, 'pie');
+            const tooltip = tooltipFn(pointData);
+            expect(getValues(tooltip)).toEqual(['Department', 'category', 'series', ' 1']);
+        });
+
+        it('should render correct values in usecase of pie chart with measures', () => {
+            const tooltipFn = generateTooltipFn(null, 'pie');
+            const tooltip = tooltipFn(pointData);
+            expect(getValues(tooltip)).toEqual(['point', ' 1']);
+        });
+    });
+
+    describe('getChartOptions', () => {
+        const dataSet = dataSets.barChartWith3MetricsAndViewByAttribute;
+        const dataSetWithoutMeasureGroup = immutableSet(dataSet, 'executionResponse.dimensions[1].headers', []);
+        const chartOptionsWithCustomOptions = mockChartOptions(dataSet, {
+            xLabel: 'xLabel',
+            yLabel: 'yLabel',
+            yFormat: 'yFormat',
+            type: 'line',
+            legendLayout: 'vertical'
+        });
+
+        it('should throw if measure group is missing in dimensions', () => {
+            expect(mockChartOptions.bind(this, dataSetWithoutMeasureGroup)).toThrow();
+        });
+
+        it('should throw if chart type is of unknown type', () => {
+            expect(mockChartOptions.bind(this, dataSetWithoutMeasureGroup, { type: 'bs' })).toThrow();
+        });
+
+        it('should assign showInPercent true only if at least one measure`s format includes a "%" sign', () => {
+            const dataSetWithPercentFormat = immutableSet(dataSet, 'executionResponse.dimensions[1].headers[0].measureGroupHeader.items[0].measureHeaderItem.format', '0.00 %');
+            const chartOptions = mockChartOptions(dataSetWithPercentFormat);
+            expect(mockChartOptions(dataSet).showInPercent).toBe(false); // false by default
+            expect(chartOptions.showInPercent).toBe(true); // true if format includes %
+        });
+
+        it('should assign custom xLabel', () => {
+            expect(chartOptionsWithCustomOptions.title.x).toBe('xLabel');
+        });
+
+        it('should assign custom yLabel', () => {
+            expect(chartOptionsWithCustomOptions.title.y).toBe('yLabel');
+        });
+
+        it('should assign custom yFormat', () => {
+            expect(chartOptionsWithCustomOptions.title.yFormat).toBe('yFormat');
+        });
+
+        it('should assign custom legend format', () => {
+            expect(chartOptionsWithCustomOptions.legendLayout).toBe('vertical');
+        });
+
+        describe('in usecase of bar chart with 3 metrics', () => {
+            const chartOptions = mockChartOptions(dataSets.barChartWith3MetricsAndViewByAttribute);
+
+            it('should assign a default legend format of horizontal', () => {
+                expect(chartOptions.legendLayout).toBe('horizontal');
+            });
+
+            it('should assign stacking option to null', () => {
+                expect(chartOptions.stacking).toBe(null);
+            });
+
+            it('should assign X axis name by default to view by attribute name', () => {
+                expect(chartOptions.title.x).toEqual('Year (Created)');
+            });
+
+            it('should assign Y axis name to empty string in case of multiple measures', () => {
+                expect(chartOptions.title.y).toBe('');
+            });
+
+            it('should assign Y axis format based on the first measure`s format', () => {
+                expect(chartOptions.title.yFormat).toEqual('#,##0.00');
+            });
+
+            it('should assign number of series equal to number of measures', () => {
+                expect(chartOptions.data.series.length).toBe(3);
+            });
+
+            it('should assign categories equal to view by attribute values', () => {
+                expect(chartOptions.data.categories).toEqual(['2008', '2009', '2010', '2011', '2012']);
+            });
+
+            it('should assign default colorPalette', () => {
+                expect(chartOptions.colorPalette).toEqual(DEFAULT_COLOR_PALETTE);
+            });
+
+            it('should assign correct tooltip function', () => {
+                const mVS = getMVS(dataSet);
+                const viewByAttribute = mVS[1];
+                const pointData = {
                     y: 1,
-                    category: '&gt;"&\'&lt;',
+                    format: '# ###',
+                    name: 'point',
+                    category: 'category',
                     series: {
                         name: 'series'
                     }
-                });
-
-                expect(tooltip.includes('&gt;&quot;&amp;&#39;&lt;')).toEqual(true);
+                };
+                const tooltip = chartOptions.actions.tooltip(pointData);
+                const expectedTooltip = generateTooltipFn(viewByAttribute, 'column')(pointData);
+                expect(tooltip).toBe(expectedTooltip);
             });
         });
 
-        describe('tooltip renders correctly for pie chart attr/metric or multiple metrics', () => {
-            it('renders correctly with attribute and metric', () => {
-                const pieTooltipFnOptions = {
-                    categoryLabel: 'category-label',
-                    metricLabel: 'opportunities lost',
-                    metricsOnly: false
-                };
-                const generatedTooltip = generateTooltipFn(pieTooltipFnOptions);
+        describe('in usecase of stack bar chart', () => {
+            const chartOptions = mockChartOptions(dataSets.barChartWithStackByAndViewByAttributes);
 
-                const tooltip = generatedTooltip({
-                    y: 1,
-                    name: '"&\'&lt;'
-                });
-
-                expect(tooltip.includes('category-label')).toEqual(true);
+            it('should assign stacking normal', () => {
+                expect(chartOptions.stacking).toBe('normal');
             });
 
-            it('renders correctly with metrics only', () => {
-                const pieTooltipFnOptions = {
-                    categoryLabel: 'category-label',
-                    metricLabel: 'opportunities lost',
-                    metricsOnly: true
-                };
-                const generatedTooltip = generateTooltipFn(pieTooltipFnOptions);
-
-                const tooltip = generatedTooltip({
-                    y: 1,
-                    name: 'opportunities'
-                });
-
-                expect(tooltip.includes('opportunities')).toEqual(true);
-                expect(tooltip.includes('category-label')).toEqual(false);
+            it('should assign X axis name to view by attribute name', () => {
+                expect(chartOptions.title.x).toEqual('Department');
             });
-        });
-    });
 
-    describe.skip('column/bar/line chart options', () => {
-        let config;
-        let mockData;
+            it('should assign Y axis name to measure name', () => {
+                expect(chartOptions.title.y).toBe('Amount');
+            });
 
-        beforeEach(() => {
-            config = {
-                color: '/metricGroup',
-                orderBy: [],
-                stacking: false,
-                type: 'column',
-                where: {},
-                x: '/gdc/md/yowwuctu6c5lkxql3itj3nz4ec54ax89/obj/15331',
-                y: '/metricValues'
-            };
+            it('should assign Y axis format based on the first measure`s format', () => {
+                expect(chartOptions.title.yFormat).toEqual('#,##0.00');
+            });
 
-            mockData = {
-                isLoaded: true,
-                headers: [
-                    {
-                        type: 'attrLabel',
-                        id: 'date.aag81lMifn6q',
-                        uri: '/gdc/md/yowwuctu6c5lkxql3itj3nz4ec54ax89/obj/15331',
-                        title: 'Year (Date)'
-                    }, {
-                        type: 'metric',
-                        id: 'metric_yowwuctu6c5lkxql3itj3nz4ec54ax89_16206.generated.pop.5b24b8',
-                        uri: '/gdc/md/yowwuctu6c5lkxql3itj3nz4ec54ax89/obj/808882',
-                        title: 'Email Click Rate - previous year',
-                        format: '#,##0.0%'
-                    }, {
-                        type: 'metric',
-                        id: 'bHPCwcn7cGns',
-                        uri: '/gdc/md/yowwuctu6c5lkxql3itj3nz4ec54ax89/obj/16206',
-                        title: 'Email Click Rate',
-                        format: '#,##0.0%'
+            it('should assign number of series equal to number of stack by attribute values', () => {
+                expect(chartOptions.data.series.length).toBe(2);
+            });
+
+            it('should assign categories equal to view by attribute values', () => {
+                expect(chartOptions.data.categories).toEqual(['Direct Sales', 'Inside Sales']);
+            });
+
+            it('should assign correct tooltip function', () => {
+                const mVS = getMVS(dataSets.barChartWithStackByAndViewByAttributes);
+                const viewByAttribute = mVS[1];
+                const pointData = {
+                    y: 1,
+                    format: '# ###',
+                    name: 'point',
+                    category: 'category',
+                    series: {
+                        name: 'series'
                     }
-                ],
-                rawData: [
-                    [{ id: '2013', name: '2013' }, null, '0.0126946885814334'],
-                    [{ id: '2014', name: '2014' }, '0.0126946885814334', '0.0261557203220383'],
-                    [{ id: '2015', name: '2015' }, '0.0261557203220383', '0.0348732552824948'],
-                    [{ id: '2016', name: '2016' }, '0.0348732552824948', null]
-                ],
-                isEmpty: false,
-                isLoading: false
-            };
-        });
-
-        it('should get chart data', () => {
-            const chartData = getChartOptions(config, mockData);
-            expect(chartData).toBeDefined();
-        });
-
-        it('should not sort data', () => {
-            const chartData = getChartOptions(config, mockData);
-            expect(chartData.series[0].name).toEqual('Email Click Rate - previous year');
-            expect(chartData.series[1].name).toEqual('Email Click Rate');
-        });
-    });
-
-    describe.skip('pie chart options', () => {
-        describe('metricOnly', () => {
-            it('should be true for multiple metrics', () => {
-                const data = {
-                    headers: [
-                        {
-                            title: 'm1',
-                            type: 'metric'
-                        },
-                        {
-                            title: 'm2',
-                            type: 'metric'
-                        }
-                    ]
                 };
-                expect(getChartOptions({}, data).metricsOnly).toEqual(true);
-            });
-
-            it('should be true for single metric', () => {
-                const data = {
-                    headers: [
-                        {
-                            title: 'm1',
-                            type: 'metric'
-                        }
-                    ]
-                };
-                expect(getChartOptions({}, data).metricsOnly).toEqual(true);
-            });
-
-            it('should be false for one metric and one attribute', () => {
-                const data = {
-                    headers: [
-                        {
-                            title: 'm1',
-                            type: 'metric'
-                        }, {
-                            title: 'att1',
-                            type: 'attrLabel'
-                        }
-                    ]
-                };
-                expect(getChartOptions({}, data).metricsOnly).toEqual(false);
+                const tooltip = chartOptions.actions.tooltip(pointData);
+                const expectedTooltip = generateTooltipFn(viewByAttribute, 'column')(pointData);
+                expect(tooltip).toBe(expectedTooltip);
             });
         });
 
-        describe('tooltip', () => {
-            it('should handle tooltip generation if no metric present', () => {
-                const data = {
-                    headers: [
-                        {
-                            title: 'att1',
-                            type: 'attrLabel'
-                        }
-                    ]
+        describe('in usecase of pie chart with attribute', () => {
+            const chartOptions = mockChartOptions(dataSets.barChartWithViewByAttribute, { type: 'pie' });
+
+            it('should assign stacking normal', () => {
+                expect(chartOptions.stacking).toBe(null);
+            });
+
+            it('should assign X axis name to view by attribute name', () => {
+                expect(chartOptions.title.x).toEqual('Department');
+            });
+
+            it('should assign Y axis name to measure name', () => {
+                expect(chartOptions.title.y).toBe('Amount');
+            });
+
+            it('should assign Y axis format based on the first measure`s format', () => {
+                expect(chartOptions.title.yFormat).toEqual('#,##0.00');
+            });
+
+            it('should always assign 1 series', () => {
+                expect(chartOptions.data.series.length).toBe(1);
+            });
+
+            it('should assign categories equal to view by attribute values', () => {
+                expect(chartOptions.data.categories).toEqual(['Direct Sales', 'Inside Sales']);
+            });
+
+            it('should assign correct tooltip function', () => {
+                const mVS = getMVS(dataSets.barChartWithStackByAndViewByAttributes);
+                const viewByAttribute = mVS[1];
+                const pointData = {
+                    y: 1,
+                    format: '# ###',
+                    name: 'point',
+                    category: 'category',
+                    series: {
+                        name: 'series'
+                    }
                 };
+                const tooltip = chartOptions.actions.tooltip(pointData);
+                const expectedTooltip = generateTooltipFn(viewByAttribute, 'column')(pointData);
+                expect(tooltip).toBe(expectedTooltip);
+            });
+        });
 
-                const tooltip = getChartOptions({}, data).actions.tooltip({
-                    y: 1234,
-                    format: '##'
-                });
+        describe('in usecase of pie chart with measures only', () => {
+            const chartOptions = mockChartOptions(dataSets.pieChartWithMetricsOnly, { type: 'pie' });
 
-                expect(tooltip).toMatchSnapshot();
+            it('should assign stacking normal', () => {
+                expect(chartOptions.stacking).toBe(null);
+            });
+
+            it('should assign X an empty string', () => {
+                expect(chartOptions.title.x).toEqual('');
+            });
+
+            it('should assign Y an empty string', () => {
+                expect(chartOptions.title.y).toBe('');
+            });
+
+            it('should assign Y axis format based on the first measure`s format', () => {
+                expect(chartOptions.title.yFormat).toEqual('#,##0.00');
+            });
+
+            it('should always assign 1 series', () => {
+                expect(chartOptions.data.series.length).toBe(1);
+            });
+
+            it('should assign categories with names of measures', () => {
+                expect(chartOptions.data.categories).toEqual(['Lost', 'Won', 'Expected']);
+            });
+
+            it('should assign correct tooltip function', () => {
+                const pointData = {
+                    y: 1,
+                    format: '# ###',
+                    name: 'point',
+                    category: 'category',
+                    series: {
+                        name: 'series'
+                    }
+                };
+                const tooltip = chartOptions.actions.tooltip(pointData);
+                const expectedTooltip = generateTooltipFn(null, 'pie')(pointData);
+                expect(tooltip).toBe(expectedTooltip);
+            });
+        });
+
+        describe('in usecase of bar chart with pop measure', () => {
+            const chartOptions = mockChartOptions(dataSets.barChartWithPopMeasureAndViewByAttribute, { type: 'column' });
+
+            it('should assign stacking normal', () => {
+                expect(chartOptions.stacking).toBe(null);
+            });
+
+            it('should assign X an view by attribute value', () => {
+                expect(chartOptions.title.x).toEqual('Year (Created)');
+            });
+
+            it('should assign Y an empty string', () => {
+                expect(chartOptions.title.y).toBe('');
+            });
+
+            it('should assign Y axis format based on the first measure`s format', () => {
+                expect(chartOptions.title.yFormat).toEqual('$#,##0.00');
+            });
+
+            it('should always assign number of series equal to number of measures', () => {
+                expect(chartOptions.data.series.length).toBe(2);
+            });
+
+            it('should assign categories ', () => {
+                expect(chartOptions.data.categories).toEqual(['2008', '2009', '2010', '2011', '2012', '2013']);
+            });
+
+            it('should assign updated color for pop measure', () => {
+                expect(chartOptions.colorPalette[0]).toEqual('rgb(161,224,243)');
+            });
+
+            it('should assign correct tooltip function', () => {
+                const mVS = getMVS(dataSets.barChartWithPopMeasureAndViewByAttribute);
+                const viewByAttribute = mVS[1];
+                const pointData = {
+                    y: 1,
+                    format: '# ###',
+                    name: 'point',
+                    category: 'category',
+                    series: {
+                        name: 'series'
+                    }
+                };
+                const tooltip = chartOptions.actions.tooltip(pointData);
+                const expectedTooltip = generateTooltipFn(viewByAttribute, 'column')(pointData);
+                expect(tooltip).toBe(expectedTooltip);
             });
         });
     });

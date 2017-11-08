@@ -1,10 +1,10 @@
 import { colors2Object, numberFormat } from '@gooddata/numberjs';
 import invariant from 'invariant';
 
-import { get, isNumber, without } from 'lodash';
+import { get, without } from 'lodash';
 import { parseValue } from '../utils/common';
 import { DEFAULT_COLOR_PALETTE, _getLighterColor } from './transformation';
-import { PIE_CHART } from '../VisualizationTypes';
+import { PIE_CHART, CHART_TYPES } from '../VisualizationTypes';
 import { isDataOfReasonableSize } from './highChartsCreators';
 
 import { DEFAULT_CATEGORIES_LIMIT } from './highcharts/commonConfiguration';
@@ -13,6 +13,10 @@ export const PIE_CHART_LIMIT = 20;
 
 export const VIEW_BY_DIMENSION_INDEX = 0;
 export const STACK_BY_DIMENSION_INDEX = 1;
+
+export function unwrap(wrappedObject) {
+    return wrappedObject[Object.keys(wrappedObject)[0]];
+}
 
 export function isNegativeValueIncluded(series) {
     return series
@@ -76,46 +80,39 @@ export function getSeriesItemData(
         let measureIndex = seriesIndex;
         // by default pointIndex corresponds to viewBy label index
         let viewByIndex = pointIndex;
-
         // drillContext can have 1 to 3 items
         // viewBy attribute label, stackby label if available
         // last drillContextItem is always current serie measure
         if (stackByAttribute) {
-            // if there is a stackBy attribute, then seriesIndex corresponds to stackBy label index
             // pointIndex corresponds to viewBy attribute label (if available)
             viewByIndex = pointIndex;
-            // pointIndex also corresponds to measureGroup label
-            // but measures do not match a carthesian multiplication of attributes
-            // therefore we need to calculate the measure index
-            // based on the number of attribute values on the same dimension
-            measureIndex = Math.floor(pointIndex / stackByAttribute.items.length);
+            // stack bar chart has always just one measure
+            measureIndex = 0;
+        } else if (type === PIE_CHART && !viewByAttribute) {
+            measureIndex = pointIndex;
         }
 
         const pointData = {
             y: parseValue(pointValue),
+            format: unwrap(measureGroup.items[measureIndex]).format,
             marker: {
                 enabled: pointValue !== null
             }
         };
-        if (viewByAttribute) {
-            pointData.name = get(viewByAttribute, ['items', viewByIndex, 'attributeHeaderItem', 'name']);
-        } else if (!stackByAttribute) {
-            pointData.name = get(measureGroup, ['items', pointIndex, 'measureHeaderItem', 'name']);
+        if (stackByAttribute) {
+            // if there is a stackBy attribute, then seriesIndex corresponds to stackBy label index
+            pointData.name = unwrap(stackByAttribute.items[seriesIndex]).name;
+        } else if (type === PIE_CHART && viewByAttribute) {
+            pointData.name = unwrap(viewByAttribute.items[viewByIndex]).name;
         } else {
-            pointData.name = get(stackByAttribute, ['items', seriesIndex, 'attributeHeaderItem', 'name']);
+            pointData.name = unwrap(measureGroup.items[measureIndex]).name;
         }
-
-        // TODO pie chart measure name
 
         if (type === PIE_CHART) {
             // add color to pie chart points from colorPalette
             pointData.color = colorPalette[pointIndex];
             // Pie charts use pointData viewByIndex as legendIndex if available instead of seriesItem legendIndex
             pointData.legendIndex = viewByAttribute ? viewByIndex : pointIndex;
-        }
-        const format = measureGroup.items[measureIndex].measureHeaderItem.format;
-        if (format) {
-            pointData.format = format;
         }
         return pointData;
     });
@@ -151,8 +148,7 @@ export function getSeries(
             // this is a limitiation of highcharts and a reason why you can not have multi-measure stacked charts
             seriesItemConfig.name = stackByAttribute.items[seriesIndex].attributeHeaderItem.name;
         } else if (type === PIE_CHART && !viewByAttribute) {
-            // Pie charts with measures only have a single series which name can be either a dimension name
-            // or concatenation of measure names
+            // Pie charts with measures only have a single series which name would is ambiguous
             seriesItemConfig.name = measureGroup.items.map((wrappedMeasure) => {
                 const measureType = Object.keys(wrappedMeasure)[0];
                 const measure = wrappedMeasure[measureType];
@@ -169,50 +165,45 @@ export function getSeries(
 
 export const unEscapeAngleBrackets = str => str && str.replace(/&lt;/g, '<').replace(/&gt;/g, '>');
 
-export function generatePieTooltipFn({ categoryLabel, measureLabel, measuresOnly }) {
-    const formatValue = (val, format) => {
-        return colors2Object(numberFormat(val, format));
-    };
-    return (point) => {
-        const formattedValue = escape(formatValue(point.y, point.format).label);
-        const category = isNumber(point.name) ? '' :
-            escape(unEscapeAngleBrackets(point.name));
-        const categoryRow = !measuresOnly ? `<tr>
-                <td class="title">${escape(categoryLabel)}</td>
-                <td class="value">${category}</td>
-            </tr>` : '';
-        const measureTitle = measuresOnly ? point.name : measureLabel;
-        return `
-            <table class="tt-values">
-                ${categoryRow}
-                <tr>
-                    <td class="title">${escape(unEscapeAngleBrackets(measureTitle))}</td>
-                    <td class="value">${formattedValue}</td>
-                </tr>
-            </table>`;
-    };
-}
+export const customEscape = str => str && unEscapeAngleBrackets(str).replace(/\W/gim, (char) => {
+    if (char === '<') {
+        return '&lt;';
+    }
+    if (char === '>') {
+        return '&gt;';
+    }
+    if (char === '"') {
+        return '&quot;';
+    }
+    if (char === '&') {
+        return '&amp;';
+    }
+    return `&#${char.charCodeAt(0)};`;
+});
 
-export function generateTooltipFn({ categoryLabel }) {
+export function generateTooltipFn(viewByAttribute, type) {
     const formatValue = (val, format) => {
         return colors2Object(numberFormat(val, format));
     };
 
     return (point) => {
-        // TODO: merge with generatePieTooltipFn
-        const formattedValue = escape(formatValue(point.y, point.format).label);
-        const category = isNumber(point.category) ? '' :
-            escape(unEscapeAngleBrackets(point.category));
+        const formattedValue = formatValue(point.y, point.format).label;
+        const textData = [[customEscape(point.series.name), formattedValue]];
 
-        return `
-            <table class="tt-values"><tr>
-                <td class="title">${escape(categoryLabel)}</td>
-                <td class="value">${category}</td>
-            </tr>
-            <tr>
-                <td class="title">${escape(unEscapeAngleBrackets(point.series.name))}</td>
-                <td class="value">${formattedValue}</td>
-            </tr></table>`;
+        if (viewByAttribute) {
+            // For some reason, highcharts ommit categories for pie charts. Use point.name instead
+            textData.unshift([customEscape(viewByAttribute.name), customEscape(point.category)]);
+        } else if (type === PIE_CHART) {
+            // Pie charts with measure only have to use point.name instead of series.name to get the measure name
+            textData[0][0] = point.name;
+        }
+
+        return `<table class="tt-values">${textData.map(line => (
+            `<tr>
+                <td class="title">${line[0]}</td>
+                <td class="value">${line[1]}</td>
+            </tr>`
+        )).join('\n')}</table>`;
     };
 }
 
@@ -255,11 +246,6 @@ export function findAttributeInDimension(dimension, attributeHeaderItemsDimensio
     });
 }
 
-
-export function unwrap(wrappedObject) {
-    return wrappedObject[Object.keys(wrappedObject)[0]];
-}
-
 export function getDrillContext(stackByItem, viewByItem, measure) {
     return without([
         stackByItem,
@@ -279,7 +265,6 @@ export function getDrillContext(stackByItem, viewByItem, measure) {
             uri: attribute ? attribute.uri : uri // uri of attribute or measure
         };
     });
-
     /*
         old drillable items sample
         [
@@ -337,10 +322,6 @@ export function getDrillableSeries(
                 attribute: stackByAttribute
             } : null;
 
-            // console.log('stackByItem', stackByItem);
-            // console.log('viewByItem', viewByItem);
-            // console.log('measure', measure);
-
             // point is drillable if a drillableItem matches:
             //   point's measure,
             //   point's viewBy attribute,
@@ -362,7 +343,6 @@ export function getDrillableSeries(
                     || (drillableHook.identifier && drillableHook.identifier === drillableItem.identifier)
                 )
             ));
-            // console.log('drilldown', drilldown);
 
             const drillableProps = {
                 drilldown
@@ -402,10 +382,17 @@ export function getChartOptions(
     resultSpec,
     dimensions,
     executionResultData,
-    attributeHeaderItems,
+    unfilteredAttributeHeaderItems,
     config,
     drillableItems
 ) {
+    // Future version of API will return measures alongside attributeHeaderItems
+    // we need to filter these out in order to stay compatible
+    const attributeHeaderItems = unfilteredAttributeHeaderItems.map((dimension) => {
+        return dimension.filter(attributeHeaders => attributeHeaders[0].attributeHeaderItem);
+    });
+    invariant(config && config.type, `config.type must not be undefined. Possible values are: ${CHART_TYPES.join(', ')}`);
+    const type = config.type;
     const measureGroup = findMeasureGroupInDimensions(dimensions);
     const viewByAttribute = findAttributeInDimension(
         dimensions[VIEW_BY_DIMENSION_INDEX],
@@ -416,22 +403,16 @@ export function getChartOptions(
         attributeHeaderItems[STACK_BY_DIMENSION_INDEX]
     );
 
-    // console.log('afm', afm);
-    // console.log('resultSpec', resultSpec);
-    // console.log('dimensions', dimensions);
-    // console.log('executionResultData', executionResultData);
-    // console.log('attributeHeaderItems', attributeHeaderItems);
-    // console.log('measureGroup', measureGroup);
-    // console.log('stackByAttribute', stackByAttribute);
-    // console.log('viewByAttribute', viewByAttribute);
-
     if (!measureGroup) {
         throw new Error('missing measureGroup');
     }
 
-    const categories = viewByAttribute
-        ? viewByAttribute.items.map(({ attributeHeaderItem }) => (attributeHeaderItem.name))
-        : [];
+    let categories = [];
+    if (viewByAttribute) {
+        categories = viewByAttribute.items.map(({ attributeHeaderItem }) => (attributeHeaderItem.name));
+    } else if (type === PIE_CHART) {
+        categories = measureGroup.items.map(wrappedMeasure => unwrap(wrappedMeasure).name);
+    }
 
     const colorPalette = getColorPalette(config.colorPalette, measureGroup, afm);
 
@@ -440,7 +421,7 @@ export function getChartOptions(
         measureGroup,
         viewByAttribute,
         stackByAttribute,
-        config.type,
+        type,
         colorPalette
     );
 
@@ -450,26 +431,26 @@ export function getChartOptions(
         measureGroup,
         viewByAttribute,
         stackByAttribute,
-        config.type
+        type
     );
 
-    const title = {
-        x: get(dimensions, '[0].name', ''),
-        y: get(dimensions, '[1].name', '')
-    };
-
-    const yFormat = get(resultSpec, ['measures', 0, 'format']);
-    if (yFormat) {
-        title.yFormat = yFormat;
-    }
+    const xLabel = config.xLabel || (viewByAttribute ? viewByAttribute.name : '');
+    // if there is only one measure, yLabel is name of this measure, otherwise an empty string
+    const yLabel = config.yLabel || (measureGroup.items.length === 1 ? unwrap(measureGroup.items[0]).name : '');
+    const yFormat = config.yFormat || unwrap(measureGroup.items[0]).format;
 
     return {
-        type: config.type,
-        stacking: (stackByAttribute && config.type !== 'line') ? 'normal' : null,
+        type,
+        stacking: (stackByAttribute && type !== 'line') ? 'normal' : null,
         legendLayout: config.legendLayout || 'horizontal',
         colorPalette,
-        title,
-        showInPercent: get(resultSpec, 'measures', []).some((measure) => {
+        title: {
+            x: xLabel,
+            y: yLabel,
+            yFormat
+        },
+        showInPercent: measureGroup.items.some((wrappedMeasure) => {
+            const measure = wrappedMeasure[Object.keys(wrappedMeasure)[0]];
             return measure.format.includes('%');
         }),
         data: {
@@ -477,11 +458,7 @@ export function getChartOptions(
             categories
         },
         actions: {
-            tooltip: generateTooltipFn({
-                series,
-                categories,
-                type: config.type
-            })
+            tooltip: generateTooltipFn(viewByAttribute, type)
         }
     };
 }
