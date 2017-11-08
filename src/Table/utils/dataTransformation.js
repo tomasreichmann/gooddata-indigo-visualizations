@@ -49,7 +49,7 @@ function getAttributeHeaders(attributeDimension) {
             (attributeHeader) => {
                 return {
                     ...validateAttributeTableHeaderElements(get(attributeHeader, 'attributeHeader')),
-                    ...{ type: 'attribute' }
+                    type: 'attribute'
                 };
             }
         );
@@ -63,7 +63,7 @@ function getMeasureHeaders(measureDimension) {
             (measureHeader) => {
                 return {
                     ...validateMeasureTableHeaderElements(get(measureHeader, 'measureHeaderItem')),
-                    ...{ type: 'measure' }
+                    type: 'measure'
                 };
             }
         );
