@@ -27,7 +27,7 @@ import {
     DEFAULT_COLOR_PALETTE
 } from '../transformation';
 
-function mockChartOptions(
+export function mockChartOptions(
     dataSet = dataSets.barChartWithStackByAndViewByAttributes,
     config = {
         type: 'column'

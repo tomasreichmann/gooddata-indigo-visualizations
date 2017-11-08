@@ -2,14 +2,12 @@ import { pick, partial } from 'lodash';
 import { RIGHT } from './PositionTypes';
 import { PIE_CHART } from '../../VisualizationTypes';
 
-export const PIE_CHART_LIMIT = 20;
-
-const DEFAULT_LEGEND_CONFIG = {
+export const DEFAULT_LEGEND_CONFIG = {
     enabled: true,
     position: RIGHT
 };
 
-function shouldBeLegendEnabled(chartOptions) {
+export function shouldBeLegendEnabled(chartOptions) {
     const seriesLength = chartOptions.data.series.length;
     // More than one measure or stackedBy more than one category
     const hasMoreThanOneSeries = seriesLength > 1;
@@ -20,7 +18,7 @@ function shouldBeLegendEnabled(chartOptions) {
         || isPieChartWithMoreThanOneCategory;
 }
 
-function getLegendItems(chartOptions) {
+export function getLegendItems(chartOptions) {
     const legendDataSource = chartOptions.type === PIE_CHART
         ? chartOptions.data.series[0].data
         : chartOptions.data.series;
@@ -29,14 +27,15 @@ function getLegendItems(chartOptions) {
     });
 }
 
-function onLegendItemClick(type, chartRef, item, isEnabled) {
-    const seriesItem = type === PIE_CHART
+export function onLegendItemClick(type, chartRef, item, isEnabled) {
+    const clickTarget = type === PIE_CHART
         ? chartRef.chart.series[0].data[item.legendIndex]
         : chartRef.chart.series[item.legendIndex];
-    seriesItem.setVisible();
 
-    if (!isEnabled && seriesItem.points) {
-        seriesItem.points.filter(point => (point.dataLabel))
+    clickTarget.setVisible();
+
+    if (!isEnabled && clickTarget.points) {
+        clickTarget.points.filter(point => (point.dataLabel))
             .map(({ dataLabel }) => dataLabel.hide());
     }
 }
