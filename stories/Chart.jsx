@@ -165,7 +165,8 @@ storiesOf('Chart')
                 <ChartTransformation
                     drillableItems={[
                         {
-                            uri: executionData.executionResponse.dimensions[1].headers[0].measureGroupHeader.items[0].measureHeaderItem.uri
+                            uri: executionData.executionResponse.dimensions[1]
+                                .headers[0].measureGroupHeader.items[0].measureHeaderItem.uri
                         }
                     ]}
                     config={{
@@ -191,7 +192,8 @@ storiesOf('Chart')
                 <ChartTransformation
                     drillableItems={[
                         {
-                            uri: executionData.executionResponse.dimensions[1].headers[0].measureGroupHeader.items[1].measureHeaderItem.uri
+                            uri: executionData.executionResponse.dimensions[1]
+                                .headers[0].measureGroupHeader.items[1].measureHeaderItem.uri
                         }
                     ]}
                     config={{
@@ -289,11 +291,6 @@ storiesOf('Chart')
     })
     .add('new transformation bar chart with viewBy and stackBy attribute', () => {
         const executionData = dataSets.barChartWithStackByAndViewByAttributes;
-        console.log(
-            'drillable by',
-            executionData.executionResult.attributeHeaderItems[1][0][0].attributeHeaderItem.name,
-            executionData.executionResult.attributeHeaderItems[1][0][0].attributeHeaderItem.uri
-        );
         return screenshotWrap(
             wrap(
                 <ChartTransformation
@@ -377,7 +374,8 @@ storiesOf('Chart')
                 <ChartTransformation
                     drillableItems={[
                         {
-                            uri: executionData.executionResponse.dimensions[0].headers[0].measureGroupHeader.items[1].measureHeaderItem.uri
+                            uri: executionData.executionResponse.dimensions[0]
+                                .headers[0].measureGroupHeader.items[1].measureHeaderItem.uri
                         }
                     ]}
                     config={{
