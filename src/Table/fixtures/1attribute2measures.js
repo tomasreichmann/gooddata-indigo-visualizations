@@ -116,7 +116,7 @@ export const EXECUTION_RESULT_1A_2M = {
         [] // empty array => there are no attributes in second dimension
     ],
     paging: {
-        size: [
+        count: [
             3,
             4
         ],
@@ -124,7 +124,7 @@ export const EXECUTION_RESULT_1A_2M = {
             0,
             0
         ],
-        overallSize: [
+        total: [
             3,
             4
         ]

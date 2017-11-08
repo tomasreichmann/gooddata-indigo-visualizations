@@ -141,7 +141,7 @@ export const EXECUTION_RESULT_POP = {
         [] // empty array => there are no attributes in second dimension
     ],
     paging: {
-        size: [
+        count: [
             2,
             4
         ],

@@ -6,6 +6,11 @@ import Table from './Table';
 import DrillableItem from '../proptypes/DrillableItem';
 import { getHeaders, getRows, validateTableProportions } from './utils/dataTransformation';
 import { getSortInfo, getSortItem } from './utils/sort';
+import {
+    ExecutionRequestPropTypes,
+    ExecutionResponsePropTypes,
+    ExecutionResultPropTypes
+} from '../proptypes/execution';
 
 function renderDefaultTable(props) {
     return <Table {...props} />;
@@ -16,9 +21,9 @@ export default class TableTransformation extends Component {
         afterRender: PropTypes.func,
         config: PropTypes.object,
         drillableItems: PropTypes.arrayOf(PropTypes.shape(DrillableItem)),
-        executionRequest: PropTypes.object.isRequired, // TODO specify object
-        executionResponse: PropTypes.object.isRequired, // TODO specify object
-        executionResult: PropTypes.object.isRequired, // TODO specify object
+        executionRequest: ExecutionRequestPropTypes.isRequired,
+        executionResponse: ExecutionResponsePropTypes.isRequired,
+        executionResult: ExecutionResultPropTypes.isRequired,
         height: PropTypes.number,
         onSortChange: PropTypes.func,
         tableRenderer: PropTypes.func,

@@ -46,7 +46,7 @@ function generateAttributeHeaderItems(columns, rows) {
                 return {
                     attributeHeaderItem: {
                         uri: `${generateAttributeDisplayFormUriForColumn(columnNumber)}/elements?id=${rowNumber}`,
-                        name: columnNumber
+                        name: columnNumber.toString()
                     }
                 };
             });
@@ -76,7 +76,7 @@ function generateExecutionResult(columns, rows) {
         data: [],
         attributeHeaderItems: generateAttributeHeaderItems(columns, rows),
         paging: {
-            size: [
+            count: [
                 0,
                 20
             ],
@@ -84,7 +84,7 @@ function generateExecutionResult(columns, rows) {
                 0,
                 0
             ],
-            overallSize: [
+            total: [
                 1,
                 20
             ]
