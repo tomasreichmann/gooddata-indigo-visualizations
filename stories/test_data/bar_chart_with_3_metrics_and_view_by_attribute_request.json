@@ -51,13 +51,11 @@
 		"resultSpec": {
 			"dimensions": [
                 {
-                    "name": "Opportunities",
 					"itemIdentifiers": [
 						  "yearCreatedAttribute"
                     ]
 				},
 				{
-					"name": "Year (Created)",
 					"itemIdentifiers": [
 						"measureGroup"
 					]

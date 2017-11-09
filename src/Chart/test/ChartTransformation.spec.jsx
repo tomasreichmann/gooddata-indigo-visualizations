@@ -1,13 +1,13 @@
 import React from 'react';
 import { shallow, mount } from 'enzyme';
 import ChartTransformation from '../ChartTransformation';
-import * as dataSets from '../../../stories/test_data/dataSets';
+import * as fixtures from '../../../stories/test_data/fixtures';
 import { RIGHT } from '../Legend/PositionTypes';
 import HighChartRenderer from '../HighChartRenderer';
 
 describe('ChartTransformation', () => {
     const defaultProps = {
-        ...dataSets.barChartWithoutAttributes,
+        ...fixtures.barChartWithoutAttributes,
         config: {
             type: 'column',
             legend: {
@@ -39,7 +39,7 @@ describe('ChartTransformation', () => {
             }
         };
         function createChartRendererProps(
-            executionData = dataSets.barChartWithStackByAndViewByAttributes,
+            executionData = fixtures.barChartWithStackByAndViewByAttributes,
             config = {}
         ) {
             const renderer = jest.fn().mockReturnValue(<div />);
@@ -55,18 +55,18 @@ describe('ChartTransformation', () => {
         }
 
         it('should be always disabled for single series', () => {
-            const passedProps = createChartRendererProps(dataSets.barChartWithViewByAttribute);
+            const passedProps = createChartRendererProps(fixtures.barChartWithViewByAttribute);
             expect(passedProps.legend.enabled).toEqual(false);
         });
 
         it('should be enabled & on the right by default', () => {
-            const passedProps = createChartRendererProps(dataSets.barChartWith3MetricsAndViewByAttribute);
+            const passedProps = createChartRendererProps(fixtures.barChartWith3MetricsAndViewByAttribute);
             expect(passedProps.legend.enabled).toEqual(true);
             expect(passedProps.legend.position).toEqual(RIGHT);
         });
 
         it('should be able to disable default', () => {
-            const passedProps = createChartRendererProps(dataSets.barChartWith3MetricsAndViewByAttribute, {
+            const passedProps = createChartRendererProps(fixtures.barChartWith3MetricsAndViewByAttribute, {
                 legend: {
                     enabled: false
                 }
@@ -79,7 +79,7 @@ describe('ChartTransformation', () => {
         it('should be invoked if data series is over limit', () => {
             const onDataTooLarge = jest.fn();
             const props = {
-                ...dataSets.barChartWith3MetricsAndViewByAttribute,
+                ...fixtures.barChartWith3MetricsAndViewByAttribute,
                 onDataTooLarge,
                 config: {
                     ...defaultProps.config,
@@ -95,7 +95,7 @@ describe('ChartTransformation', () => {
         it('should be invoked if data categories is over limit', () => {
             const onDataTooLarge = jest.fn();
             const props = {
-                ...dataSets.barChartWith3MetricsAndViewByAttribute,
+                ...fixtures.barChartWith3MetricsAndViewByAttribute,
                 onDataTooLarge,
                 config: {
                     ...defaultProps.config,
@@ -111,7 +111,7 @@ describe('ChartTransformation', () => {
         it('should be invoked on component mount', () => {
             const onDataTooLarge = jest.fn();
             const props = {
-                ...dataSets.barChartWith3MetricsAndViewByAttribute,
+                ...fixtures.barChartWith3MetricsAndViewByAttribute,
                 onDataTooLarge,
                 config: {
                     ...defaultProps.config,
@@ -128,7 +128,7 @@ describe('ChartTransformation', () => {
         it('should be invoked on props change', () => {
             const onDataTooLarge = jest.fn();
             const props = {
-                ...dataSets.barChartWith3MetricsAndViewByAttribute,
+                ...fixtures.barChartWith3MetricsAndViewByAttribute,
                 onDataTooLarge,
                 config: {
                     ...defaultProps.config,
@@ -157,13 +157,13 @@ describe('ChartTransformation', () => {
 
     describe('onNegativeValues', () => {
         const pieChartPropsWithNegativeValue = {
-            ...dataSets.pieChartWithMetricsOnly,
+            ...fixtures.pieChartWithMetricsOnly,
             config: {
                 ...defaultProps.config,
                 type: 'pie'
             },
             executionResult: {
-                ...dataSets.pieChartWithMetricsOnly.executionResult,
+                ...fixtures.pieChartWithMetricsOnly.executionResult,
                 data: [
                     [
                         '-1',
@@ -223,7 +223,7 @@ describe('ChartTransformation', () => {
             expect(wrapper.find(HighChartRenderer)).toHaveLength(0);
             expect(onNegativeValues).toHaveBeenCalled();
 
-            wrapper.setProps(dataSets.pieChartWithMetricsOnly);
+            wrapper.setProps(fixtures.pieChartWithMetricsOnly);
             expect(wrapper.find(HighChartRenderer)).toHaveLength(1);
         });
 

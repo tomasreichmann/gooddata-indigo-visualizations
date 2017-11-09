@@ -48,7 +48,7 @@ export default class ChartTransformation extends Component {
 
         executionResult: PropTypes.shape({
             data: PropTypes.array.isRequired,
-            attributeHeaderItems: PropTypes.array.isRequired
+            headerItems: PropTypes.array.isRequired
         }).isRequired
     };
 
@@ -91,7 +91,7 @@ export default class ChartTransformation extends Component {
             drillableItems,
             executionRequest: { afm, resultSpec },
             executionResponse: { dimensions },
-            executionResult: { data, attributeHeaderItems },
+            executionResult: { data, headerItems },
             config,
             onDataTooLarge,
             onNegativeValues
@@ -102,7 +102,7 @@ export default class ChartTransformation extends Component {
             resultSpec,
             dimensions,
             data,
-            attributeHeaderItems,
+            headerItems,
             config,
             drillableItems
         );

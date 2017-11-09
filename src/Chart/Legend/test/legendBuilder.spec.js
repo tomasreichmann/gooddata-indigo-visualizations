@@ -1,5 +1,5 @@
 import { mockChartOptions } from '../../test/chartOptionsBuilder.spec';
-import * as dataSets from '../../../../stories/test_data/dataSets';
+import * as fixtures from '../../../../stories/test_data/fixtures';
 import getLegend, {
     shouldBeLegendEnabled,
     getLegendItems,
@@ -9,24 +9,24 @@ import getLegend, {
 
 describe('shouldBeLegendEnabled', () => {
     it('should return false by default', () => {
-        const chartOptions = mockChartOptions(dataSets.barChartWithViewByAttribute);
+        const chartOptions = mockChartOptions(fixtures.barChartWithViewByAttribute);
         expect(shouldBeLegendEnabled(chartOptions)).toBe(false);
     });
 
     it('should return true if chart has more than one series', () => {
-        const chartOptions = mockChartOptions(dataSets.barChartWith3MetricsAndViewByAttribute);
+        const chartOptions = mockChartOptions(fixtures.barChartWith3MetricsAndViewByAttribute);
         expect(shouldBeLegendEnabled(chartOptions)).toBe(true);
     });
 
     it('should return true if pie chart has more than one value', () => {
-        const chartOptions = mockChartOptions(dataSets.pieChartWithMetricsOnly, { type: 'pie' });
+        const chartOptions = mockChartOptions(fixtures.pieChartWithMetricsOnly, { type: 'pie' });
         expect(shouldBeLegendEnabled(chartOptions)).toBe(true);
     });
 });
 
 describe('getLegendItems', () => {
     it('should return correct legend items for regular charts', () => {
-        const chartOptions = mockChartOptions(dataSets.barChartWithStackByAndViewByAttributes);
+        const chartOptions = mockChartOptions(fixtures.barChartWithStackByAndViewByAttributes);
         expect(getLegendItems(chartOptions)).toEqual([
             {
                 color: 'rgb(20,178,226)',
@@ -42,7 +42,7 @@ describe('getLegendItems', () => {
     });
 
     it('should return correct legend items for pie charts', () => {
-        const chartOptions = mockChartOptions(dataSets.pieChartWithMetricsOnly, { type: 'pie' });
+        const chartOptions = mockChartOptions(fixtures.pieChartWithMetricsOnly, { type: 'pie' });
         expect(getLegendItems(chartOptions)).toEqual([
             {
                 color: 'rgb(20,178,226)',
@@ -114,7 +114,7 @@ describe('onLegendItemClick', () => {
 });
 
 describe('getLegend', () => {
-    const chartOptions = mockChartOptions(dataSets.barChartWith3MetricsAndViewByAttribute);
+    const chartOptions = mockChartOptions(fixtures.barChartWith3MetricsAndViewByAttribute);
     const legend = getLegend({}, chartOptions);
 
     it('should assign enabled: false if disabled by config', () => {

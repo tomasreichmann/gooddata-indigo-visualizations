@@ -1,7 +1,7 @@
 import { colors2Object, numberFormat } from '@gooddata/numberjs';
 import invariant from 'invariant';
 
-import { get, without } from 'lodash';
+import { range, get, without } from 'lodash';
 import { parseValue } from '../utils/common';
 import { DEFAULT_COLOR_PALETTE, _getLighterColor } from './transformation';
 import { PIE_CHART, CHART_TYPES } from '../VisualizationTypes';
@@ -55,14 +55,53 @@ export function normalizeColorToRGB(color) {
     });
 }
 
-export function getColorPalette(colorPalette = DEFAULT_COLOR_PALETTE, measureGroup, afm) {
-    const updatedColorPalette = [...colorPalette]; // clone array
+export function getColorPalette(
+    colorPalette = DEFAULT_COLOR_PALETTE,
+    measureGroup,
+    viewByAttribute,
+    stackByAttribute,
+    afm,
+    type
+) {
+    let updatedColorPalette = [...colorPalette]; // clone array
+    const isAttributePieChart = type === PIE_CHART && afm.attributes && afm.attributes.length > 0;
+    let itemsCount = measureGroup.items.length;
+
+    if (stackByAttribute) {
+        itemsCount = stackByAttribute.items.length;
+    }
+    if (isAttributePieChart) {
+        itemsCount = viewByAttribute.items.length;
+    }
     measureGroup.items.forEach((measureItem, measureItemIndex) => {
         if (isPopMeasure(measureItem, afm)) {
-            updatedColorPalette[measureItemIndex] =
-                _getLighterColor(normalizeColorToRGB(updatedColorPalette[measureItemIndex]), 0.6);
+            const sourceMeasureIdentifier = afm.measures[measureItemIndex].definition.popMeasure.measureIdentifier;
+            const sourceMeasureIndex = afm.measures.findIndex(
+                measure => measure.localIdentifier === sourceMeasureIdentifier
+            );
+            if (sourceMeasureIndex) {
+                // copy sourceMeasure color and lighten it if it exists, then insert it at pop measure position
+                updatedColorPalette = [
+                    ...updatedColorPalette.slice(0, measureItemIndex),
+                    _getLighterColor(normalizeColorToRGB(updatedColorPalette[sourceMeasureIndex]), 0.6),
+                    ...updatedColorPalette.slice(measureItemIndex + 1)
+                ];
+            }
         }
     });
+
+    const colorCountDifference = itemsCount - updatedColorPalette.length;
+    // copy colors if there are more items then colors in palette
+    if (colorCountDifference > 0) {
+        updatedColorPalette = [
+            ...updatedColorPalette,
+            ...range(colorCountDifference)
+                .map(colorIndex => updatedColorPalette[colorIndex % updatedColorPalette.length])
+        ];
+    // remove extra colors
+    } else if (colorCountDifference < 0) {
+        updatedColorPalette = updatedColorPalette.slice(0, colorCountDifference);
+    }
     return updatedColorPalette;
 }
 
@@ -191,8 +230,8 @@ export function generateTooltipFn(viewByAttribute, type) {
         const textData = [[customEscape(point.series.name), formattedValue]];
 
         if (viewByAttribute) {
-            // For some reason, highcharts ommit categories for pie charts. Use point.name instead
-            textData.unshift([customEscape(viewByAttribute.name), customEscape(point.category)]);
+            // For some reason, highcharts ommit categories for pie charts with attribute. Use point.name instead
+            textData.unshift([customEscape(viewByAttribute.name), customEscape(point.category || point.name)]);
         } else if (type === PIE_CHART) {
             // Pie charts with measure only have to use point.name instead of series.name to get the measure name
             textData[0][0] = point.name;
@@ -372,7 +411,7 @@ export function getDrillableSeries(
  * @param resultSpec <executionRequest.resultSpec> object defining expected result dimension structure,
  * @param dimensions <executionResponse.dimensions> array defining calculated dimensions and their headers,
  * @param executionResultData <executionResult.data> array with calculated data
- * @param attributeHeaderItems <executionResult.attributeHeaderItems> array of attribute header items
+ * @param unfilteredHeaderItems <executionResult.headerItems> array of attribute header items mixed with measures
  * @param config object defining chart display settings
  * @param drillableItems array of items for isPointDrillable matching
  * @return Returns composed chart options object
@@ -382,13 +421,13 @@ export function getChartOptions(
     resultSpec,
     dimensions,
     executionResultData,
-    unfilteredAttributeHeaderItems,
+    unfilteredHeaderItems,
     config,
     drillableItems
 ) {
     // Future version of API will return measures alongside attributeHeaderItems
     // we need to filter these out in order to stay compatible
-    const attributeHeaderItems = unfilteredAttributeHeaderItems.map((dimension) => {
+    const attributeHeaderItems = unfilteredHeaderItems.map((dimension) => {
         return dimension.filter(attributeHeaders => attributeHeaders[0].attributeHeaderItem);
     });
     invariant(config && config.type, `config.type must not be undefined. Possible values are: ${CHART_TYPES.join(', ')}`);
@@ -407,14 +446,12 @@ export function getChartOptions(
         throw new Error('missing measureGroup');
     }
 
-    let categories = [];
-    if (viewByAttribute) {
-        categories = viewByAttribute.items.map(({ attributeHeaderItem }) => (attributeHeaderItem.name));
-    } else if (type === PIE_CHART) {
-        categories = measureGroup.items.map(wrappedMeasure => unwrap(wrappedMeasure).name);
-    }
+    const categories = viewByAttribute
+        ? viewByAttribute.items.map(({ attributeHeaderItem }) => (attributeHeaderItem.name))
+        : measureGroup.items.map(wrappedMeasure => unwrap(wrappedMeasure).name);
 
-    const colorPalette = getColorPalette(config.colorPalette, measureGroup, afm);
+    const colorPalette =
+        getColorPalette(config.colorPalette, measureGroup, viewByAttribute, stackByAttribute, afm, type);
 
     const seriesWithoutDrillability = getSeries(
         executionResultData,

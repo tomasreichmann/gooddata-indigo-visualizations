@@ -1,3 +1,5 @@
+import { immutableSet, repeatItemsNTimes } from '../../src/utils/common';
+
 export const barChartWithoutAttributes = {
     executionRequest: require('../test_data/bar_chart_without_attributes_request.json').execution,
     executionResponse: require('../test_data/bar_chart_without_attributes_response.json').executionResponse,
@@ -34,9 +36,29 @@ export const pieChartWithMetricsOnly = {
     executionResult: require('../test_data/pie_chart_with_metrics_only_result.json').executionResult
 };
 
+export const barChartWith18MetricsAndViewByAttribute = (() => {
+    let dataSet = immutableSet(
+        barChartWith3MetricsAndViewByAttribute,
+        'executionRequest.afm.measures',
+        repeatItemsNTimes(barChartWith3MetricsAndViewByAttribute.executionRequest.afm.measures, 6));
+    dataSet = immutableSet(
+        dataSet,
+        'executionResponse.dimensions[1].headers[0].measureGroupHeader.items',
+        repeatItemsNTimes(barChartWith3MetricsAndViewByAttribute.executionResponse
+            .dimensions[1].headers[0].measureGroupHeader.items, 6)
+    );
+    dataSet = immutableSet(
+        dataSet,
+        'executionResult.data',
+        repeatItemsNTimes(barChartWith3MetricsAndViewByAttribute.executionResult.data, 6)
+    );
+    return dataSet;
+})();
+
 export default {
     barChartWithoutAttributes,
     barChartWith3MetricsAndViewByAttribute,
+    barChartWith18MetricsAndViewByAttribute,
     barChartWithViewByAttribute,
     barChartWithStackByAndViewByAttributes,
     barChartWithPopMeasureAndViewByAttribute,

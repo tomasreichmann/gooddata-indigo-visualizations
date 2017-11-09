@@ -33,14 +33,12 @@
 		"resultSpec": {
 			"dimensions": [
                 {
-                    "name": "Department",
 					"itemIdentifiers": [
                         "departmentAttribute",
                       	"measureGroup"
                     ]
 				},
 				{
-					"name": "Amount",
 					"itemIdentifiers": [
 						"regionAttribute"
 					]

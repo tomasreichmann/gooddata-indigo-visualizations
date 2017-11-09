@@ -43,13 +43,11 @@
 		"resultSpec": {
 			"dimensions": [
                 {
-                    "name": "Amount",
 					"itemIdentifiers": [
                       	"measureGroup"
                     ]
 				},
 				{
-					"name": "",
 					"itemIdentifiers": []
 				}
 			]

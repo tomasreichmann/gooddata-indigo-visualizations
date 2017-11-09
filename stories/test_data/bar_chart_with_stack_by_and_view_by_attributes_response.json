@@ -2,7 +2,6 @@
     "executionResponse": {
         "dimensions": [
             {
-                "name": "Department",
                 "headers": [
                     {
                         "attributeHeader": {
@@ -30,7 +29,6 @@
                 ]
             },
             {
-                "name": "Amount",
                 "headers": [
                     {
                         "attributeHeader": {

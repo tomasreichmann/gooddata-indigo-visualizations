@@ -1,4 +1,5 @@
-import { range, setWith, clone } from 'lodash';
+import { range } from 'lodash';
+import { immutableSet } from '../../utils/common';
 import {
     isNegativeValueIncluded,
     validateData,
@@ -21,14 +22,14 @@ import {
 } from '../chartOptionsBuilder';
 import { DEFAULT_CATEGORIES_LIMIT } from '../highcharts/commonConfiguration';
 
-import * as dataSets from '../../../stories/test_data/dataSets';
+import * as fixtures from '../../../stories/test_data/fixtures';
 
 import {
     DEFAULT_COLOR_PALETTE
 } from '../transformation';
 
 export function mockChartOptions(
-    dataSet = dataSets.barChartWithStackByAndViewByAttributes,
+    dataSet = fixtures.barChartWithStackByAndViewByAttributes,
     config = {
         type: 'column'
     },
@@ -37,14 +38,14 @@ export function mockChartOptions(
     const {
         executionRequest: { afm, resultSpec },
         executionResponse: { dimensions },
-        executionResult: { data, attributeHeaderItems }
+        executionResult: { data, headerItems }
     } = dataSet;
     return getChartOptions(
         afm,
         resultSpec,
         dimensions,
         data,
-        attributeHeaderItems,
+        headerItems,
         config,
         drillableItems
     );
@@ -53,16 +54,16 @@ export function mockChartOptions(
 function getMVS(dataSet) {
     const {
         executionResponse: { dimensions },
-        executionResult: { attributeHeaderItems }
+        executionResult: { headerItems }
     } = dataSet;
     const measureGroup = findMeasureGroupInDimensions(dimensions);
     const viewByAttribute = findAttributeInDimension(
         dimensions[VIEW_BY_DIMENSION_INDEX],
-        attributeHeaderItems[VIEW_BY_DIMENSION_INDEX]
+        headerItems[VIEW_BY_DIMENSION_INDEX]
     );
     const stackByAttribute = findAttributeInDimension(
         dimensions[STACK_BY_DIMENSION_INDEX],
-        attributeHeaderItems[STACK_BY_DIMENSION_INDEX]
+        headerItems[STACK_BY_DIMENSION_INDEX]
     );
     return [
         measureGroup,
@@ -80,18 +81,16 @@ function getSeriesItemDataParameters(dataSet, seriesIndex) {
     ];
 }
 
-const immutableSet = (dataSet, path, newValue) => setWith({ ...dataSet }, path, newValue, clone);
-
 describe('chartOptionsBuilder', () => {
     const barChartWithStackByAndViewByAttributesOptions = mockChartOptions();
 
     const barChartWith3MetricsAndViewByAttributeOptions =
-        mockChartOptions(dataSets.barChartWith3MetricsAndViewByAttribute);
+        mockChartOptions(fixtures.barChartWith3MetricsAndViewByAttribute);
 
     const pieChartOptionsWithNegativeValue = mockChartOptions({
-        ...dataSets.pieChartWithMetricsOnly,
+        ...fixtures.pieChartWithMetricsOnly,
         executionResult: {
-            ...dataSets.pieChartWithMetricsOnly.executionResult,
+            ...fixtures.pieChartWithMetricsOnly.executionResult,
             data: [
                 [
                     '-1',
@@ -105,7 +104,7 @@ describe('chartOptionsBuilder', () => {
     });
 
     const pieChartWithMetricsOnlyOptions = mockChartOptions({
-        ...dataSets.pieChartWithMetricsOnly
+        ...fixtures.pieChartWithMetricsOnly
     },
     {
         type: 'pie'
@@ -161,7 +160,7 @@ describe('chartOptionsBuilder', () => {
             });
         });
         it(`should validate with "dataTooLarge: true" against default chart categories limit of ${DEFAULT_CATEGORIES_LIMIT}`, () => {
-            const chartOptions = mockChartOptions(dataSets.barChartWith3MetricsAndViewByAttribute);
+            const chartOptions = mockChartOptions(fixtures.barChartWith3MetricsAndViewByAttribute);
             chartOptions.data.categories = range(DEFAULT_CATEGORIES_LIMIT + 1);
 
             const validationResult = validateData({}, chartOptions);
@@ -174,7 +173,7 @@ describe('chartOptionsBuilder', () => {
             });
         });
         it('should validate with "dataTooLarge: true" against default pie chart series limit of 1', () => {
-            const chartOptions = mockChartOptions(dataSets.barChartWith3MetricsAndViewByAttribute,
+            const chartOptions = mockChartOptions(fixtures.barChartWith3MetricsAndViewByAttribute,
                 {
                     type: 'pie'
                 });
@@ -188,7 +187,7 @@ describe('chartOptionsBuilder', () => {
             });
         });
         it(`should validate with "dataTooLarge: true" against default pie chart categories limit of ${PIE_CHART_LIMIT}`, () => {
-            const chartOptions = mockChartOptions(dataSets.pieChartWithMetricsOnly,
+            const chartOptions = mockChartOptions(fixtures.pieChartWithMetricsOnly,
                 {
                     type: 'pie'
                 });
@@ -217,28 +216,28 @@ describe('chartOptionsBuilder', () => {
 
     describe('isPopMeasure', () => {
         it('should return true if measureItem was defined as a popMeasure', () => {
-            const measureItem = dataSets
+            const measureItem = fixtures
                 .barChartWithPopMeasureAndViewByAttribute
                 .executionResponse
                 .dimensions[1]
                 .headers[0]
                 .measureGroupHeader
                 .items[0];
-            const afm = dataSets.barChartWithPopMeasureAndViewByAttribute.executionRequest.afm;
+            const afm = fixtures.barChartWithPopMeasureAndViewByAttribute.executionRequest.afm;
             expect(
                 isPopMeasure(measureItem, afm)
             ).toEqual(true);
         });
 
         it('should return false if measureItem was defined as a simple measure', () => {
-            const measureItem = dataSets
+            const measureItem = fixtures
                 .barChartWithPopMeasureAndViewByAttribute
                 .executionResponse
                 .dimensions[1]
                 .headers[0]
                 .measureGroupHeader
                 .items[1];
-            const afm = dataSets.barChartWithPopMeasureAndViewByAttribute.executionRequest.afm;
+            const afm = fixtures.barChartWithPopMeasureAndViewByAttribute.executionRequest.afm;
 
             expect(
                 isPopMeasure(measureItem, afm)
@@ -250,7 +249,7 @@ describe('chartOptionsBuilder', () => {
         it('should call supplied callback for all headers in all dimensions until it returns a non null value', () => {
             const mockCallback = jest.fn();
             mockCallback.mockReturnValue(null);
-            const sampleDimensions = dataSets.barChartWithStackByAndViewByAttributes.executionResponse.dimensions;
+            const sampleDimensions = fixtures.barChartWithStackByAndViewByAttributes.executionResponse.dimensions;
             const headerCount = sampleDimensions[0].headers.length + sampleDimensions[1].headers.length;
             const returnValue = findInDimensionHeaders(sampleDimensions, mockCallback);
             expect(returnValue).toBeNull();
@@ -259,7 +258,7 @@ describe('chartOptionsBuilder', () => {
         it('should return the first non-null value of it`s callback value', () => {
             const mockCallback = jest.fn();
             mockCallback.mockReturnValue(42);
-            const sampleDimensions = dataSets.barChartWithStackByAndViewByAttributes.executionResponse.dimensions;
+            const sampleDimensions = fixtures.barChartWithStackByAndViewByAttributes.executionResponse.dimensions;
             const returnValue = findInDimensionHeaders(sampleDimensions, mockCallback);
             expect(returnValue).toBe(42);
             expect(mockCallback).toHaveBeenCalledTimes(1);
@@ -268,13 +267,13 @@ describe('chartOptionsBuilder', () => {
 
     describe('findMeasureGroupInDimensions', () => {
         it('should return the measure group header', () => {
-            const sampleDimensions = dataSets.barChartWithStackByAndViewByAttributes.executionResponse.dimensions;
+            const sampleDimensions = fixtures.barChartWithStackByAndViewByAttributes.executionResponse.dimensions;
             const returnValue = findMeasureGroupInDimensions(sampleDimensions);
             const expectedValue = sampleDimensions[0].headers[1].measureGroupHeader;
             expect(returnValue).toBe(expectedValue);
         });
         it('should throw an error if measureGroup is not the last header on it\'s dimension', () => {
-            const sampleDimensions = dataSets.barChartWithStackByAndViewByAttributes.executionResponse.dimensions;
+            const sampleDimensions = fixtures.barChartWithStackByAndViewByAttributes.executionResponse.dimensions;
             const invalidDimensions = [
                 {
                     ...sampleDimensions[0],
@@ -289,30 +288,30 @@ describe('chartOptionsBuilder', () => {
     });
 
     describe('findAttributeInDimension', () => {
-        const dimensions = dataSets.barChartWithStackByAndViewByAttributes.executionResponse.dimensions;
-        const attributeHeaderItems = dataSets
+        const dimensions = fixtures.barChartWithStackByAndViewByAttributes.executionResponse.dimensions;
+        const headerItems = fixtures
             .barChartWithStackByAndViewByAttributes
             .executionResult
-            .attributeHeaderItems;
+            .headerItems;
         it('should return the view by attribute header with header items', () => {
             const returnValue = findAttributeInDimension(
                 dimensions[VIEW_BY_DIMENSION_INDEX],
-                attributeHeaderItems[VIEW_BY_DIMENSION_INDEX]
+                headerItems[VIEW_BY_DIMENSION_INDEX]
             );
             const expectedValue = {
                 ...dimensions[VIEW_BY_DIMENSION_INDEX].headers[0].attributeHeader,
-                items: attributeHeaderItems[VIEW_BY_DIMENSION_INDEX][0]
+                items: headerItems[VIEW_BY_DIMENSION_INDEX][0]
             };
             expect(returnValue).toEqual(expectedValue);
         });
         it('should return the stack by attribute header with header items', () => {
             const returnValue = findAttributeInDimension(
                 dimensions[STACK_BY_DIMENSION_INDEX],
-                attributeHeaderItems[STACK_BY_DIMENSION_INDEX]
+                headerItems[STACK_BY_DIMENSION_INDEX]
             );
             const expectedValue = {
                 ...dimensions[STACK_BY_DIMENSION_INDEX].headers[0].attributeHeader,
-                items: attributeHeaderItems[STACK_BY_DIMENSION_INDEX][0]
+                items: headerItems[STACK_BY_DIMENSION_INDEX][0]
             };
             expect(returnValue).toEqual(expectedValue);
         });
@@ -335,38 +334,43 @@ describe('chartOptionsBuilder', () => {
     });
 
     describe('getColorPalette', () => {
-        it('should just return the original palette if there are no pop measures', () => {
-            const measureGroup = dataSets
-                .barChartWithoutAttributes
-                .executionResponse
-                .dimensions[1]
-                .headers[0]
-                .measureGroupHeader;
-            const afm = dataSets.barChartWithoutAttributes.executionRequest.afm;
+        it('should just return the original palette if there are no pop measures shorten to cover all legend items', () => {
+            const [measureGroup, viewByAttribute, stackByAttribute] = getMVS(fixtures.barChartWithoutAttributes);
+            const afm = fixtures.barChartWithoutAttributes.executionRequest.afm;
+            const type = 'column';
             expect(
-                getColorPalette(DEFAULT_COLOR_PALETTE, measureGroup, afm)
-            ).toEqual(DEFAULT_COLOR_PALETTE);
+                getColorPalette(
+                    DEFAULT_COLOR_PALETTE,
+                    measureGroup,
+                    viewByAttribute,
+                    stackByAttribute,
+                    afm,
+                    type
+                )
+            ).toEqual(DEFAULT_COLOR_PALETTE.slice(0, measureGroup.items.length));
         });
-        it('should return a palette with a lighter color for each pop measure', () => {
-            const measureGroup = dataSets
-                .barChartWithPopMeasureAndViewByAttribute
-                .executionResponse
-                .dimensions[1]
-                .headers[0]
-                .measureGroupHeader;
-            const afm = dataSets.barChartWithPopMeasureAndViewByAttribute.executionRequest.afm;
-            const originalColor = 0;
+        it('should return a palette with a lighter color for each pop measure based on it`s source measure', () => {
+            const [measureGroup, viewByAttribute, stackByAttribute] =
+                getMVS(fixtures.barChartWithPopMeasureAndViewByAttribute);
+            const afm = fixtures.barChartWithPopMeasureAndViewByAttribute.executionRequest.afm;
+            const type = 'column';
+
+            const originalColorLightness = 0;
+            const originalColor = `rgb(${originalColorLightness},${originalColorLightness},${originalColorLightness})`;
             const lighterModifier = 0.6;
-            const lighterColor = Math.floor((255 - originalColor) * lighterModifier);
-            const customPalette = [`rgb(${originalColor},${originalColor},${originalColor})`, 'rgb(128,128,128)'];
-            const updatedPalette = getColorPalette(customPalette, measureGroup, afm);
-            expect(updatedPalette).toEqual([`rgb(${lighterColor},${lighterColor},${lighterColor})`, ...customPalette.slice(1)]);
+            const lighterColorLightness = Math.floor((255 - originalColorLightness) * lighterModifier);
+            const lighterColor = `rgb(${lighterColorLightness},${lighterColorLightness},${lighterColorLightness})`;
+
+            const customPalette = [originalColor, originalColor];
+            const updatedPalette =
+                getColorPalette(customPalette, measureGroup, viewByAttribute, stackByAttribute, afm, type);
+            expect(updatedPalette).toEqual([lighterColor, originalColor]);
         });
     });
 
     describe('getSeriesItemData', () => {
         describe('in usecase of bar chart with pop measure and view by attribute', () => {
-            const parameters = getSeriesItemDataParameters(dataSets.barChartWithPopMeasureAndViewByAttribute, 0);
+            const parameters = getSeriesItemDataParameters(fixtures.barChartWithPopMeasureAndViewByAttribute, 0);
             const seriesItemData = getSeriesItemData(
                 ...parameters,
                 'column',
@@ -414,7 +418,7 @@ describe('chartOptionsBuilder', () => {
         });
 
         describe('in usecase of pie chart with metrics only', () => {
-            const parameters = getSeriesItemDataParameters(dataSets.pieChartWithMetricsOnly, 0);
+            const parameters = getSeriesItemDataParameters(fixtures.pieChartWithMetricsOnly, 0);
             const seriesItemData = getSeriesItemData(
                 ...parameters,
                 'pie',
@@ -455,7 +459,7 @@ describe('chartOptionsBuilder', () => {
         });
 
         describe('in usecase of pie chart with an attribute', () => {
-            const parameters = getSeriesItemDataParameters(dataSets.barChartWithViewByAttribute, 0);
+            const parameters = getSeriesItemDataParameters(fixtures.barChartWithViewByAttribute, 0);
             const seriesItemData = getSeriesItemData(
                 ...parameters,
                 'pie',
@@ -496,7 +500,7 @@ describe('chartOptionsBuilder', () => {
 
     describe('getSeries', () => {
         describe('in usecase of bar chart with 3 measures and view by attribute', () => {
-            const dataSet = dataSets.barChartWith3MetricsAndViewByAttribute;
+            const dataSet = fixtures.barChartWith3MetricsAndViewByAttribute;
             const mVS = getMVS(dataSet);
             const type = 'column';
             const seriesData = getSeries(
@@ -543,7 +547,7 @@ describe('chartOptionsBuilder', () => {
         });
 
         describe('in usecase of bar chart with stack by and view by attributes', () => {
-            const dataSet = dataSets.barChartWithStackByAndViewByAttributes;
+            const dataSet = fixtures.barChartWithStackByAndViewByAttributes;
             const mVS = getMVS(dataSet);
             const type = 'column';
             const seriesData = getSeries(
@@ -590,7 +594,7 @@ describe('chartOptionsBuilder', () => {
 
     describe('getDrillContext', () => {
         it('should return correct drillContex for bar chart with stack by and view by attributes', () => {
-            const dataSet = dataSets.barChartWithStackByAndViewByAttributes;
+            const dataSet = fixtures.barChartWithStackByAndViewByAttributes;
             const [measureGroup, viewByAttribute, stackByAttribute] = getMVS(dataSet);
             const measure = measureGroup.items[0].measureHeaderItem;
 
@@ -628,7 +632,7 @@ describe('chartOptionsBuilder', () => {
         });
 
         it('should return correct drillContex for pie chart measures only', () => {
-            const dataSet = dataSets.pieChartWithMetricsOnly;
+            const dataSet = fixtures.pieChartWithMetricsOnly;
             const [measureGroup] = getMVS(dataSet);
             const measure = measureGroup.items[0].measureHeaderItem;
 
@@ -649,7 +653,7 @@ describe('chartOptionsBuilder', () => {
 
     describe('getDrillableSeries', () => {
         describe('in usecase of bar chart with 3 measures and view by attribute', () => {
-            const dataSet = dataSets.barChartWith3MetricsAndViewByAttribute;
+            const dataSet = fixtures.barChartWith3MetricsAndViewByAttribute;
             const mVS = getMVS(dataSet);
             const type = 'column';
             const seriesWithoutDrillability = getSeries(
@@ -759,7 +763,7 @@ describe('chartOptionsBuilder', () => {
         });
 
         describe('in usecase of bar chart with stack by and view by attributes', () => {
-            const dataSet = dataSets.barChartWithStackByAndViewByAttributes;
+            const dataSet = fixtures.barChartWithStackByAndViewByAttributes;
             const mVS = getMVS(dataSet);
             const type = 'column';
             const seriesData = getSeries(
@@ -823,7 +827,7 @@ describe('chartOptionsBuilder', () => {
     });
 
     describe('generateTooltipFn', () => {
-        const dataSet = dataSets.barChartWithViewByAttribute;
+        const dataSet = fixtures.barChartWithViewByAttribute;
         const mVS = getMVS(dataSet);
         const viewByAttribute = mVS[1];
         const pointData = {
@@ -894,7 +898,7 @@ describe('chartOptionsBuilder', () => {
     });
 
     describe('getChartOptions', () => {
-        const dataSet = dataSets.barChartWith3MetricsAndViewByAttribute;
+        const dataSet = fixtures.barChartWith3MetricsAndViewByAttribute;
         const dataSetWithoutMeasureGroup = immutableSet(dataSet, 'executionResponse.dimensions[1].headers', []);
         const chartOptionsWithCustomOptions = mockChartOptions(dataSet, {
             xLabel: 'xLabel',
@@ -936,7 +940,7 @@ describe('chartOptionsBuilder', () => {
         });
 
         describe('in usecase of bar chart with 3 metrics', () => {
-            const chartOptions = mockChartOptions(dataSets.barChartWith3MetricsAndViewByAttribute);
+            const chartOptions = mockChartOptions(fixtures.barChartWith3MetricsAndViewByAttribute);
 
             it('should assign a default legend format of horizontal', () => {
                 expect(chartOptions.legendLayout).toBe('horizontal');
@@ -966,8 +970,8 @@ describe('chartOptionsBuilder', () => {
                 expect(chartOptions.data.categories).toEqual(['2008', '2009', '2010', '2011', '2012']);
             });
 
-            it('should assign default colorPalette', () => {
-                expect(chartOptions.colorPalette).toEqual(DEFAULT_COLOR_PALETTE);
+            it('should assign 3 colors from default colorPalette', () => {
+                expect(chartOptions.colorPalette).toEqual(DEFAULT_COLOR_PALETTE.slice(0, 3));
             });
 
             it('should assign correct tooltip function', () => {
@@ -989,7 +993,7 @@ describe('chartOptionsBuilder', () => {
         });
 
         describe('in usecase of stack bar chart', () => {
-            const chartOptions = mockChartOptions(dataSets.barChartWithStackByAndViewByAttributes);
+            const chartOptions = mockChartOptions(fixtures.barChartWithStackByAndViewByAttributes);
 
             it('should assign stacking normal', () => {
                 expect(chartOptions.stacking).toBe('normal');
@@ -1016,7 +1020,7 @@ describe('chartOptionsBuilder', () => {
             });
 
             it('should assign correct tooltip function', () => {
-                const mVS = getMVS(dataSets.barChartWithStackByAndViewByAttributes);
+                const mVS = getMVS(fixtures.barChartWithStackByAndViewByAttributes);
                 const viewByAttribute = mVS[1];
                 const pointData = {
                     y: 1,
@@ -1034,7 +1038,7 @@ describe('chartOptionsBuilder', () => {
         });
 
         describe('in usecase of pie chart with attribute', () => {
-            const chartOptions = mockChartOptions(dataSets.barChartWithViewByAttribute, { type: 'pie' });
+            const chartOptions = mockChartOptions(fixtures.barChartWithViewByAttribute, { type: 'pie' });
 
             it('should assign stacking normal', () => {
                 expect(chartOptions.stacking).toBe(null);
@@ -1061,7 +1065,7 @@ describe('chartOptionsBuilder', () => {
             });
 
             it('should assign correct tooltip function', () => {
-                const mVS = getMVS(dataSets.barChartWithStackByAndViewByAttributes);
+                const mVS = getMVS(fixtures.barChartWithStackByAndViewByAttributes);
                 const viewByAttribute = mVS[1];
                 const pointData = {
                     y: 1,
@@ -1079,7 +1083,7 @@ describe('chartOptionsBuilder', () => {
         });
 
         describe('in usecase of pie chart with measures only', () => {
-            const chartOptions = mockChartOptions(dataSets.pieChartWithMetricsOnly, { type: 'pie' });
+            const chartOptions = mockChartOptions(fixtures.pieChartWithMetricsOnly, { type: 'pie' });
 
             it('should assign stacking normal', () => {
                 expect(chartOptions.stacking).toBe(null);
@@ -1122,7 +1126,7 @@ describe('chartOptionsBuilder', () => {
         });
 
         describe('in usecase of bar chart with pop measure', () => {
-            const chartOptions = mockChartOptions(dataSets.barChartWithPopMeasureAndViewByAttribute, { type: 'column' });
+            const chartOptions = mockChartOptions(fixtures.barChartWithPopMeasureAndViewByAttribute, { type: 'column' });
 
             it('should assign stacking normal', () => {
                 expect(chartOptions.stacking).toBe(null);
@@ -1149,11 +1153,11 @@ describe('chartOptionsBuilder', () => {
             });
 
             it('should assign updated color for pop measure', () => {
-                expect(chartOptions.colorPalette[0]).toEqual('rgb(161,224,243)');
+                expect(chartOptions.colorPalette).toEqual(['rgb(153,230,209)', 'rgb(0,193,141)']);
             });
 
             it('should assign correct tooltip function', () => {
-                const mVS = getMVS(dataSets.barChartWithPopMeasureAndViewByAttribute);
+                const mVS = getMVS(fixtures.barChartWithPopMeasureAndViewByAttribute);
                 const viewByAttribute = mVS[1];
                 const pointData = {
                     y: 1,

@@ -38,13 +38,11 @@
 		"resultSpec": {
 			"dimensions": [
 				{
-					"name": "Date",
 					"itemIdentifiers": [
 						"yearCreatedAttribute"
 					]
 				},
 				{
-					"name": "Amount",
 					"itemIdentifiers": [
 						"measureGroup"
 					]

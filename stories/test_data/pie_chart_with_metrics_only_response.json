@@ -2,7 +2,6 @@
     "executionResponse": {
         "dimensions": [
             {
-                "name": "Amount",
                 "headers": [
                     {
                         "measureGroupHeader": {
@@ -40,9 +39,7 @@
                 ]
             },
             {
-                "name": "empty",
-                "headers": [
-                ]
+                "headers": []
             }
         ],
         "links": {

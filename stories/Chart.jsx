@@ -1,6 +1,8 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 
+import { immutableSet, repeatItemsNTimes } from '../src/utils/common';
+
 import Visualization from '../src/Visualization';
 import LineFamilyChartTransformation from '../src/Chart/LineFamilyChartTransformation';
 import ChartTransformation from '../src/Chart/ChartTransformation';
@@ -8,7 +10,7 @@ import { FLUID_LEGEND_THRESHOLD } from '../src/Chart/Legend/Legend';
 
 import * as TestConfig from './test_data/test_config';
 import * as TestData from './test_data/test_data';
-import * as dataSets from './test_data/dataSets';
+import * as fixtures from './test_data/fixtures';
 
 import IntlWrapper from './utils/IntlWrapper';
 import { wrap, screenshotWrap } from './utils/wrap';
@@ -158,7 +160,7 @@ storiesOf('Chart')
         )
     ))
     .add('new transformation column chart without attributes', () => {
-        const executionData = dataSets.barChartWithoutAttributes;
+        const executionData = fixtures.barChartWithoutAttributes;
 
         return screenshotWrap(
             wrap(
@@ -185,7 +187,7 @@ storiesOf('Chart')
         );
     })
     .add('new transformation column chart with 3 metrics and view by attribute', () => {
-        const executionData = dataSets.barChartWith3MetricsAndViewByAttribute;
+        const executionData = fixtures.barChartWith3MetricsAndViewByAttribute;
 
         return screenshotWrap(
             wrap(
@@ -211,8 +213,36 @@ storiesOf('Chart')
             )
         );
     })
+    .add('new transformation column chart with 18 measures and view by attribute', () => {
+        const dataSet = fixtures.barChartWith18MetricsAndViewByAttribute;
+        console.log('dataSet', dataSet);
+
+        return screenshotWrap(
+            wrap(
+                <ChartTransformation
+                    drillableItems={[
+                        {
+                            uri: dataSet.executionResponse.dimensions[1]
+                                .headers[0].measureGroupHeader.items[1].measureHeaderItem.uri
+                        }
+                    ]}
+                    config={{
+                        type: 'column',
+                        legend: {
+                            enabled: true,
+                            position: 'top'
+                        },
+                        legendLayout: 'horizontal',
+                        colorPalette: TestData.lgbtPalette
+                    }}
+                    {...dataSet}
+                    onDataTooLarge={f => f}
+                />
+            )
+        );
+    })
     .add('new transformation column chart with view by attribute', () => {
-        const executionData = dataSets.barChartWithViewByAttribute;
+        const executionData = fixtures.barChartWithViewByAttribute;
 
         return screenshotWrap(
             wrap(
@@ -238,14 +268,14 @@ storiesOf('Chart')
         );
     })
     .add('new transformation column chart with viewBy and stackBy attribute', () => {
-        const executionData = dataSets.barChartWithStackByAndViewByAttributes;
+        const executionData = fixtures.barChartWithStackByAndViewByAttributes;
 
         return screenshotWrap(
             wrap(
                 <ChartTransformation
                     drillableItems={[
                         {
-                            uri: executionData.executionResult.attributeHeaderItems[0][0][0].attributeHeaderItem.uri
+                            uri: executionData.executionResult.headerItems[0][0][0].attributeHeaderItem.uri
                         }
                     ]}
                     config={{
@@ -264,14 +294,14 @@ storiesOf('Chart')
         );
     })
     .add('new transformation column chart with pop measure and view by attribute', () => {
-        const executionData = dataSets.barChartWithPopMeasureAndViewByAttribute;
+        const executionData = fixtures.barChartWithPopMeasureAndViewByAttribute;
 
         return screenshotWrap(
             wrap(
                 <ChartTransformation
                     drillableItems={[
                         {
-                            uri: executionData.executionResult.attributeHeaderItems[0][0][0].attributeHeaderItem.uri
+                            uri: executionData.executionResult.headerItems[0][0][0].attributeHeaderItem.uri
                         }
                     ]}
                     config={{
@@ -290,13 +320,13 @@ storiesOf('Chart')
         );
     })
     .add('new transformation bar chart with viewBy and stackBy attribute', () => {
-        const executionData = dataSets.barChartWithStackByAndViewByAttributes;
+        const executionData = fixtures.barChartWithStackByAndViewByAttributes;
         return screenshotWrap(
             wrap(
                 <ChartTransformation
                     drillableItems={[
                         {
-                            uri: executionData.executionResult.attributeHeaderItems[1][0][0].attributeHeaderItem.uri
+                            uri: executionData.executionResult.headerItems[1][0][0].attributeHeaderItem.uri
                         }
                     ]}
                     config={{
@@ -315,14 +345,14 @@ storiesOf('Chart')
         );
     })
     .add('new transformation line chart with viewBy and stackBy attribute', () => {
-        const executionData = dataSets.barChartWithStackByAndViewByAttributes;
+        const executionData = fixtures.barChartWithStackByAndViewByAttributes;
 
         return screenshotWrap(
             wrap(
                 <ChartTransformation
                     drillableItems={[
                         {
-                            uri: executionData.executionResult.attributeHeaderItems[0][0][0].attributeHeaderItem.uri
+                            uri: executionData.executionResult.headerItems[0][0][0].attributeHeaderItem.uri
                         }
                     ]}
                     config={{
@@ -341,14 +371,14 @@ storiesOf('Chart')
         );
     })
     .add('new transformation pie chart view viewBy attribute', () => {
-        const executionData = dataSets.barChartWithViewByAttribute;
+        const executionData = fixtures.barChartWithViewByAttribute;
 
         return screenshotWrap(
             wrap(
                 <ChartTransformation
                     drillableItems={[
                         {
-                            uri: executionData.executionResult.attributeHeaderItems[0][0][0].attributeHeaderItem.uri
+                            uri: executionData.executionResult.headerItems[0][0][0].attributeHeaderItem.uri
                         }
                     ]}
                     config={{
@@ -367,7 +397,7 @@ storiesOf('Chart')
         );
     })
     .add('new transformation pie chart view metrics only', () => {
-        const executionData = dataSets.pieChartWithMetricsOnly;
+        const executionData = fixtures.pieChartWithMetricsOnly;
 
         return screenshotWrap(
             wrap(
@@ -393,8 +423,8 @@ storiesOf('Chart')
             )
         );
     })
-    .add('visualization barChartWithoutAttributes', () => {
-        const executionData = dataSets.barChartWithoutAttributes;
+    .add('visualization bar chart without attributes', () => {
+        const executionData = fixtures.barChartWithoutAttributes;
 
         return screenshotWrap(
             wrap(
@@ -407,8 +437,8 @@ storiesOf('Chart')
             )
         );
     })
-    .add('visualization barChartWith3MetricsAndViewByAttribute', () => {
-        const executionData = dataSets.barChartWith3MetricsAndViewByAttribute;
+    .add('visualization column chart with 3 metrics and view by attribute', () => {
+        const executionData = fixtures.barChartWith3MetricsAndViewByAttribute;
 
         return screenshotWrap(
             wrap(
@@ -421,8 +451,8 @@ storiesOf('Chart')
             )
         );
     })
-    .add('visualization barChartWithViewByAttribute', () => {
-        const executionData = dataSets.barChartWithViewByAttribute;
+    .add('visualization bar chart with 3 metrics and view by attribute', () => {
+        const executionData = fixtures.barChartWith3MetricsAndViewByAttribute;
 
         return screenshotWrap(
             wrap(
@@ -435,8 +465,8 @@ storiesOf('Chart')
             )
         );
     })
-    .add('visualization barChartWithStackByAndViewByAttributes', () => {
-        const executionData = dataSets.barChartWithStackByAndViewByAttributes;
+    .add('visualization bar chart with view by attribute', () => {
+        const executionData = fixtures.barChartWithViewByAttribute;
 
         return screenshotWrap(
             wrap(
@@ -449,8 +479,8 @@ storiesOf('Chart')
             )
         );
     })
-    .add('visualization barChartWithPopMeasureAndViewByAttribute', () => {
-        const executionData = dataSets.barChartWithPopMeasureAndViewByAttribute;
+    .add('visualization bar chart with stack by and view by attributes', () => {
+        const executionData = fixtures.barChartWithStackByAndViewByAttributes;
 
         return screenshotWrap(
             wrap(
@@ -463,8 +493,22 @@ storiesOf('Chart')
             )
         );
     })
-    .add('visualization pieChartWithMetricsOnly', () => {
-        const executionData = dataSets.pieChartWithMetricsOnly;
+    .add('visualization bar chart with pop measure and view by attribute', () => {
+        const executionData = fixtures.barChartWithPopMeasureAndViewByAttribute;
+
+        return screenshotWrap(
+            wrap(
+                <Visualization
+                    {...executionData}
+                    config={{
+                        type: 'column'
+                    }}
+                />
+            )
+        );
+    })
+    .add('visualization pie chart with metrics only', () => {
+        const executionData = fixtures.pieChartWithMetricsOnly;
 
         return screenshotWrap(
             wrap(

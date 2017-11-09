@@ -2,7 +2,6 @@
     "executionResponse": {
         "dimensions": [
             {
-                "name": "Opportunities",
                 "headers": [
                     {
                         "attributeHeader": {
@@ -15,7 +14,6 @@
                 ]
             },
             {
-                "name": "Year (Created)",
                 "headers": [
                     {
                         "measureGroupHeader": {
