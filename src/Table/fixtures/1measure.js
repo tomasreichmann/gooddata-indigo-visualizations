@@ -61,7 +61,7 @@ export const EXECUTION_RESULT_1M = {
             '42470571.16'
         ]
     ],
-    attributeHeaderItems: [
+    headerItems: [
         [], // empty array => there are no attributes in first dimension
         [] // empty array => there are no attributes in second dimension
     ],

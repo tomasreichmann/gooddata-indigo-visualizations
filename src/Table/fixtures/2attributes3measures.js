@@ -147,7 +147,7 @@ export const EXECUTION_RESULT_2A_3M = {
 
         ]
     ],
-    attributeHeaderItems: [
+    headerItems: [
         [
             [
                 {

@@ -74,7 +74,7 @@ function generateExecutionResponse(columns, rows) {
 function generateExecutionResult(columns, rows) {
     return {
         data: [],
-        attributeHeaderItems: generateAttributeHeaderItems(columns, rows),
+        headerItems: generateAttributeHeaderItems(columns, rows),
         paging: {
             count: [
                 0,

@@ -46,7 +46,7 @@ export const EXECUTION_RESPONSE_1A = {
 
 export const EXECUTION_RESULT_1A = {
     data: [],
-    attributeHeaderItems: [
+    headerItems: [
         [
             [
                 {

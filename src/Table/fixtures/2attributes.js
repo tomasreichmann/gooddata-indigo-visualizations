@@ -60,7 +60,7 @@ export const EXECUTION_RESPONSE_2A = {
 
 export const EXECUTION_RESULT_2A = {
     data: [],
-    attributeHeaderItems: [
+    headerItems: [
         [
             [
                 {

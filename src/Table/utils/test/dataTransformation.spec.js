@@ -1,4 +1,4 @@
-import { omit } from 'lodash';
+import { omit, set } from 'lodash';
 import {
     getBackwardCompatibleHeaderForDrilling,
     getBackwardCompatibleRowForDrilling,
@@ -159,6 +159,32 @@ describe('Table utils - Data transformation', () => {
                 const rows = getRows(EXECUTION_RESULT_POP);
                 expect(rows).toEqual(TABLE_ROWS_POP);
             });
+        });
+    });
+
+    describe('ExecutionResult headerItems', () => {
+        it('should filter only arrays which contains only attribute header items', () => {
+            const measureGroupHeaderItems = [
+                {
+                    measureGroupHeaderItem: {
+                        foo: 'baz'
+                    }
+                },
+                {
+                    measureGroupHeaderItem: {
+                        foo: 'baz'
+                    }
+                }
+            ];
+
+            const extendedHeaderItemsWithMeasureGroupHeaderItems = set(
+                EXECUTION_RESULT_1A,
+                'headerItems[0]',
+                EXECUTION_RESULT_1A.headerItems[0].concat([measureGroupHeaderItems])
+            );
+
+            const rows = getRows(extendedHeaderItemsWithMeasureGroupHeaderItems);
+            expect(rows).toEqual(TABLE_ROWS_1A);
         });
     });
 

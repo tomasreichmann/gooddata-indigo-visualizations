@@ -1,4 +1,4 @@
-import { get, isEqual, isObject, keys, zip } from 'lodash';
+import { get, has, isEqual, isObject, keys, zip } from 'lodash';
 
 const REQUIRED_ATTRIBUTE_TABLE_HEADER_ELEMENTS = ['uri', 'identifier', 'localIdentifier', 'name'];
 
@@ -82,13 +82,16 @@ export function getHeaders(executionResponse) {
 }
 
 export function getRows(executionResult) {
-    // two dimensional attributeHeaderItems array are always returned (and requested)
+    // two dimensional headerItems array are always returned (and requested)
     // attributes are always returned (and requested) in first dimension
-    const attributeValues = get(executionResult, 'attributeHeaderItems')[0]
+    const attributeValues = get(executionResult, 'headerItems')[0]
+        .filter( // filter only arrays which contains only attribute header items
+            headerItem => headerItem.every(item => has(item, 'attributeHeaderItem'))
+        )
         .map(
-            attributeHeaderItem => attributeHeaderItem
+            attributeHeaderItems => attributeHeaderItems
                 .map(
-                    attrHeaderItem => get(attrHeaderItem, 'attributeHeaderItem')
+                    attributeHeaderItem => get(attributeHeaderItem, 'attributeHeaderItem')
                 )
         );
 

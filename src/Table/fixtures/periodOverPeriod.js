@@ -109,7 +109,7 @@ export const EXECUTION_RESULT_POP = {
             null
         ]
     ],
-    attributeHeaderItems: [
+    headerItems: [
         [
             [
                 {

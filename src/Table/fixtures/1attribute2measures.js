@@ -102,7 +102,7 @@ export const EXECUTION_RESULT_1A_2M = {
             '1324'
         ]
     ],
-    attributeHeaderItems: [
+    headerItems: [
         [
             [
                 {
