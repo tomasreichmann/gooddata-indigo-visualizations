@@ -1,8 +1,6 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 
-import { immutableSet, repeatItemsNTimes } from '../src/utils/common';
-
 import Visualization from '../src/Visualization';
 import LineFamilyChartTransformation from '../src/Chart/LineFamilyChartTransformation';
 import ChartTransformation from '../src/Chart/ChartTransformation';
@@ -215,7 +213,6 @@ storiesOf('Chart')
     })
     .add('new transformation column chart with 18 measures and view by attribute', () => {
         const dataSet = fixtures.barChartWith18MetricsAndViewByAttribute;
-        console.log('dataSet', dataSet);
 
         return screenshotWrap(
             wrap(
