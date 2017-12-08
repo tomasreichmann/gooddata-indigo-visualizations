@@ -245,14 +245,14 @@ export function findMeasureGroupInDimensions(dimensions) {
     });
 }
 
-export function findAttributeInDimension(dimension, attributeHeaderItemsDimension) {
+export function findAttributeInDimension(dimension, attributeHeaderItemsDimension = []) {
     return findInDimensionHeaders([dimension], (headerType, header) => {
         if (headerType === 'attributeHeader') {
             return {
                 ...header,
                 // attribute items are delivered separately from attributeHeaderItems
                 // there should ever only be maximum of one attribute on each dimension, other attributes are ignored
-                items: attributeHeaderItemsDimension[0]
+                items: attributeHeaderItemsDimension[0] || []
             };
         }
         return null;
@@ -395,7 +395,7 @@ export function getChartOptions(
     resultSpec,
     dimensions,
     executionResultData,
-    unfilteredHeaderItems,
+    unfilteredHeaderItems = [],
     config,
     drillableItems
 ) {

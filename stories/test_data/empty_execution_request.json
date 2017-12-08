@@ -1,0 +1,44 @@
+{
+	"execution": {
+		"afm": {
+      "measures": [
+        {
+          "localIdentifier": "d7cf56f6-bfb1-4d90-b629-8849ef75f6a5",
+          "definition": {
+            "measure": {
+              "item": {
+                "uri": "/gdc/md/k790ohq1d8xcas9oipmwfs544tqkepku/obj/15420"
+              },
+              "aggregation": "sum"
+            }
+          },
+          "alias": "Sum of Orders"
+        }
+      ],
+      "filters": [
+        {
+          "relativeDateFilter": {
+            "dataSet": {
+              "uri": "/gdc/md/k790ohq1d8xcas9oipmwfs544tqkepku/obj/15337"
+            },
+            "granularity": "GDC.time.year",
+            "from": -1,
+            "to": -1
+          }
+        }
+      ]
+    },
+		"resultSpec": {
+      "dimensions": [
+        {
+          "itemIdentifiers": []
+        },
+        {
+          "itemIdentifiers": [
+            "measureGroup"
+          ]
+        }
+      ]
+    }
+	}
+}

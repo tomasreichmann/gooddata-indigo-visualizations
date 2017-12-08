@@ -1176,5 +1176,34 @@ describe('chartOptionsBuilder', () => {
                 expect(tooltip).toBe(expectedTooltip);
             });
         });
+
+        describe('in usecase of empty execution result', () => {
+            const getEmptyChartOptions = () => generateChartOptions(fixtures.emptyExecution, { type: 'column' });
+
+            it('should return valid empty result', () => {
+                const emptyChartOptions = getEmptyChartOptions();
+                expect(emptyChartOptions).toEqual({
+                    actions: {
+                        tooltip: emptyChartOptions.actions.tooltip
+                    },
+                    colorPalette: [
+                        'rgb(20,178,226)'
+                    ],
+                    data: {
+                        categories: [],
+                        series: []
+                    },
+                    legendLayout: 'horizontal',
+                    showInPercent: false,
+                    stacking: null,
+                    title: {
+                        x: '',
+                        y: 'Sum of Orders',
+                        yFormat: '#,##0.00'
+                    },
+                    type: 'column'
+                });
+            });
+        });
     });
 });

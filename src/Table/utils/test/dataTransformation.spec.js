@@ -63,6 +63,13 @@ import {
     TABLE_ROWS_POP
 } from '../../fixtures/periodOverPeriod';
 
+import {
+    EXECUTION_RESPONSE_EMPTY,
+    EXECUTION_RESULT_EMPTY,
+    TABLE_HEADERS_EMPTY,
+    TABLE_ROWS_EMPTY
+} from '../../fixtures/empty';
+
 describe('Table utils - Data transformation', () => {
     describe('Get headers and rows', () => {
         describe('One attribute', () => {
@@ -158,6 +165,18 @@ describe('Table utils - Data transformation', () => {
             it('should get rows', () => {
                 const rows = getRows(EXECUTION_RESULT_POP);
                 expect(rows).toEqual(TABLE_ROWS_POP);
+            });
+        });
+
+        describe('Empty execution', () => {
+            it('should get headers', () => {
+                const headers = getHeaders(EXECUTION_RESPONSE_EMPTY);
+                expect(headers).toEqual(TABLE_HEADERS_EMPTY);
+            });
+
+            it('should get rows', () => {
+                const rows = getRows(EXECUTION_RESULT_EMPTY);
+                expect(rows).toEqual(TABLE_ROWS_EMPTY);
             });
         });
     });

@@ -56,6 +56,11 @@ export const pieChartWithMetricsOnly = {
     executionResult: require('../test_data/pie_chart_with_metrics_only_result.json').executionResult
 };
 
+export const emptyExecution = {
+    executionRequest: require('../test_data/empty_execution_request.json').execution,
+    executionResponse: require('../test_data/empty_execution_response.json').executionResponse,
+    executionResult: require('../test_data/empty_execution_result.json').executionResult
+};
 
 export function barChartWithNTimes3MetricsAndViewByAttribute(n = 1) {
     let dataSet = immutableSet(
@@ -144,5 +149,6 @@ export default {
     barChartWithStackByAndViewByAttributes,
     barChartWithPopMeasureAndViewByAttribute,
     barChartWith6PopMeasuresAndViewByAttribute,
-    pieChartWithMetricsOnly
+    pieChartWithMetricsOnly,
+    emptyExecution
 };

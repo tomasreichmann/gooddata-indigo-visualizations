@@ -31,7 +31,6 @@ export function getHeaders(executionResponse) {
 
     // attributes are always returned (and requested) in 0-th dimension
     const attributeHeaders = getAttributeHeaders(dimensions[0]);
-
     // measures are always returned (and requested) in 1-st dimension
     const measureHeaders = getMeasureHeaders(dimensions[1]);
 
@@ -41,7 +40,8 @@ export function getHeaders(executionResponse) {
 export function getRows(executionResult) {
     // two dimensional headerItems array are always returned (and requested)
     // attributes are always returned (and requested) in 0-th dimension
-    const attributeValues = executionResult.headerItems[0]
+    // executionResult.headerItems is optional
+    const attributeValues = get(executionResult, 'headerItems[0]', [])
         .filter( // filter only arrays which contains only attribute header items
             headerItem => headerItem.every(item => has(item, 'attributeHeaderItem'))
         )
