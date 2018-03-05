@@ -14,6 +14,8 @@ import { wrap } from './utils/wrap';
 
 import '../src/styles/charts.scss';
 
+// test
+
 function getChart({
     type = 'column',
     legendEnabled = true,
